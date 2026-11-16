@@ -62,3 +62,39 @@ npm test
 如果嵌入预览禁止下载：将网页预览通过工作区已有的“在浏览器中打开”功能打开到独立标签页后，再点击页底下载；如果没有这个功能，可在能打开的 HTTP `/preview.html` 页面中用 Edge `Ctrl+S`，保存类型选“网页，仅 HTML”，文件名填 `zangdi-catalog.html`。不要将普通开发入口 `/` 只保存 HTML，否则会缺失外部资源。
 
 聊天中的 `/workspace/...` 链接是工作区文件定位链接，不是附件下载地址。当前没有可上传聊天附件的工具。也可从工作区文件树（若提供下载菜单）获取 `dist/index.html`，或在本地完整项目中运行 `npm run build` 后获取同名文件。Windows Edge 真机不在当前环境中，下载与离线内容已通过 Chromium 自动化验证；本环境的托管浏览器禁止直接访问 `file://`，这不代表普通 Windows Edge 不能打开 HTML。
+
+## 商品相册与款式独立配图
+
+保持原有 `id`、`variants`（款式名称列表）和价格字段不变。在 `src/data.js` 的商品对象中增加以下可选字段。下面仅为路径配置示例，文件并不存在，不要直接用于线上：
+
+```js
+image: null, // 旧字段仍兼容；没有 images 时使用它
+images: [
+  'public/images/p01/common-01.webp', // 第一张用于首页封面
+  'public/images/p01/detail-01.jpg'
+],
+variants: ['赭红', '松绿', '暖金'],
+variantImages: {
+  '赭红': ['public/images/p01/red-01.webp', 'public/images/p01/red-02.jpg'],
+  '松绿': ['public/images/p01/green-01.webp'],
+  '暖金': []
+}
+```
+
+1. 将自己拍摄或获得授权的真实实物照片放入 `public/images/商品ID/`，使用英文、数字和短横线文件名；支持 JPG/JPEG、PNG、WebP。不使用 AI 生成图或旧 SVG 示意图代替实物。
+2. `images` 只放可通用于各款式的整体或细节照片。特定颜色、图案照片放入对应的 `variantImages`，键名必须与 `variants` 完全一致。数组顺序就是展示顺序。
+3. 详情默认选择第一个款式，展示“该款式照片＋公共照片”（去重）。选择其他款式时回到它的第一张照片；不会改变数量。可点击缩略图、左右滑动大图或聚焦大图后使用左右方向键。
+4. 款式无独立照片时只显示公共照片，标注“通用展示图”；两者都没有时显示占位。坏图同样显示占位，不借用其他款式照片。清单和 PNG 使用所选款式的第一张照片，没有时才使用公共照片。
+5. 保留旧 `image`、旧款式字符串和 `shan-cart` 浏览器清单格式。请勿随意更改已有商品 ID 或款式名称，否则原有清单项会被当作失效数据移除。
+6. 建议照片长边 1000–1400 像素、每张尽量小于 500KB，保证实物颜色和细节清晰。主图完整显示，避免裁切关键细节；PNG 缩略图保持原比例。微信内无法保存 PNG 时仍可复制文字或截图。
+7. 执行 `npm test` 和 `npm run build` 后检查详情、清单及导出。当前演示商品没有上传真实照片，第一件演示商品配置了空相册和空款式照片，用于验证占位和兼容；其他商品保留旧格式。
+
+离线说明：构建和下载的 HTML 内嵌代码，不内嵌商品照片。有实物照片后，需要把 `public/images/` 与 HTML 一起保留（相对路径不变），或通过完整 HTTP 网站访问；单独一个 HTML 文件不能携带这些照片。本次没有引入上传后台。
+
+### 自动化验证
+
+- `npm test`：清单、图片选择、缺图隔离、旧数据兼容、图片加载失败/超时、PNG 等比例绘图，以及根路径/子目录服务与单文件脚本语法检查。
+- `npm run build`：更新 `dist/index.html`，包含新增相册模块。
+- 可选浏览器回归：在已安装 Playwright 的环境执行 `node scripts/check-browser.mjs`。若它安装在项目外，可用 `PLAYWRIGHT_MODULE=/绝对路径/playwright/index.mjs node scripts/check-browser.mjs`；默认使用 `/usr/bin/chromium`，也可通过 `CHROMIUM_PATH` 指定浏览器。该检查在手机尺寸 Chromium 中使用临时网络测试数据验证相册、滑动、款式图、旧清单、金额及 PNG 下载，不会把测试图片写入商品目录。Playwright 不是网站运行依赖。
+
+自动化浏览器验证不能替代 iOS / Android 微信真机验收。

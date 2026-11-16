@@ -17,3 +17,18 @@
 .list-thumbnail strong{font:10px/1.7 sans-serif;letter-spacing:0}
 .list-thumbnail small{display:none}
 @media(max-width:760px){.hero-placeholder{min-height:260px}.product-image .image-placeholder{padding:12px;gap:7px}.product-image .image-placeholder strong{font-size:12px;letter-spacing:1px}.product-image .image-placeholder small{font-size:9px;letter-spacing:0}.list-thumbnail{width:65px;height:80px}.detail-image.image-placeholder{height:260px}}
+
+/* Product gallery follows the existing paper/linen palette. */
+.gallery{min-width:0;background:#efede5;align-self:start}
+.gallery-stage{height:480px;touch-action:pan-y;overflow:hidden}
+.gallery-stage .detail-image{height:100%;min-height:0}
+.gallery-stage img{object-fit:contain}
+.gallery-caption{padding:10px 14px;color:var(--muted);font-size:11px;text-align:center}
+.gallery-thumbnails{display:flex;gap:9px;overflow-x:auto;padding:0 14px 14px}
+.gallery-thumbnails button{flex:0 0 60px;height:66px;padding:2px;border:1px solid var(--line);background:var(--paper)}
+.gallery-thumbnails button[aria-pressed="true"]{border:2px solid var(--accent)}
+.gallery-thumbnails .image-placeholder{padding:3px;gap:0}
+.gallery-thumbnails .placeholder-symbol,.gallery-thumbnails small{display:none}
+.gallery-thumbnails strong{font:10px/1.4 sans-serif;letter-spacing:0}
+.gallery-thumbnails img{width:100%;height:100%;object-fit:contain}
+@media(max-width:760px){.gallery-stage{height:280px}.gallery-stage .detail-image.image-placeholder{height:100%}}

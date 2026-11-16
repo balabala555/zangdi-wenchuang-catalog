@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {Script} from 'node:vm';
 import {createServer} from '../server.js';
 
 for(const basePath of ['/', '/catalog'])test(`preview resources work under ${basePath}`,async()=>{
@@ -10,7 +11,7 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
   try{
     const home=await fetch(base);assert.equal(home.status,200);
     const html=await home.text();assert.match(html,/商品图片待上传/);
-    for(const [resource,type] of [['./src/style.css','text/css'],['./src/app.js','text/javascript'],['./src/data.js','text/javascript'],['./src/cart.js','text/javascript']]){
+    for(const [resource,type] of [['./src/style.css','text/css'],['./src/app.js','text/javascript'],['./src/data.js','text/javascript'],['./src/cart.js','text/javascript'],['./src/images.js','text/javascript']]){
       const res=await fetch(new URL(resource,base));assert.equal(res.status,200);assert.ok(res.headers.get('content-type').startsWith(type));
     }
     const preview=await fetch(new URL('preview.html',base));assert.equal(preview.status,200);
@@ -20,6 +21,7 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     assert.equal(download.headers.get('content-disposition'),'attachment; filename="zangdi-catalog.html"');
     assert.ok(download.headers.get('content-type').startsWith('text/html'));
     const exported=await download.text();assert.match(exported,/<style>/);assert.match(exported,/<script>/);
+    new Script(exported.match(/<script>([\s\S]*?)<\/script>/)[1]);
     assert.doesNotMatch(exported,/<script[^>]+src=|<link[^>]+stylesheet|^import |id="download-page"/m);
     const missing=await fetch(new URL('public/images/missing.jpg',base));assert.equal(missing.status,404);assert.doesNotMatch(await missing.text(),/<!doctype/i);
     assert.equal((await fetch(new URL('.git/config',base))).status,404);

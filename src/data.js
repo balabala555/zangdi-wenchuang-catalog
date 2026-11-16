@@ -7,3 +7,7 @@ export const products = [
   {id:'p05',name:'云边 · 流苏小挂饰',category:'随身饰物',price:58,tag:'小小心意',image:null,subtitle:'为平凡的一天，添一点色彩',material:'棉线 / 木珠',size:'全长约 16cm',description:'圆润木珠与柔软流苏的简单组合。挂在包侧或钥匙旁，把温暖的色彩带在身边。',variants:['日落橘','湖水绿','米白']},
   {id:'p06',name:'原野 · 棉麻桌垫',category:'织物布艺',price:78,tag:'自然质感',image:null,subtitle:'让每一次落座，都有温度',material:'棉麻混纺',size:'约 35 × 45cm，单张',description:'朴素的织纹与细细的山色条纹，为书桌或餐桌铺上一小片温柔原野。可与陶杯搭配，营造自然的日常角落。',variants:['原麻色','暖沙色']}
 ];
+
+// New fields are optional; empty arrays intentionally preserve honest missing-photo placeholders.
+products[0].images = [];
+products[0].variantImages = {'赭红': [], '松绿': [], '暖金': []};
