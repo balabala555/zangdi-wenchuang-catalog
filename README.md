@@ -98,3 +98,15 @@ variantImages: {
 - 可选浏览器回归：在已安装 Playwright 的环境执行 `node scripts/check-browser.mjs`。若它安装在项目外，可用 `PLAYWRIGHT_MODULE=/绝对路径/playwright/index.mjs node scripts/check-browser.mjs`；默认使用 `/usr/bin/chromium`，也可通过 `CHROMIUM_PATH` 指定浏览器。该检查在手机尺寸 Chromium 中使用临时网络测试数据验证相册、滑动、款式图、旧清单、金额及 PNG 下载，不会把测试图片写入商品目录。Playwright 不是网站运行依赖。
 
 自动化浏览器验证不能替代 iOS / Android 微信真机验收。
+
+## 首件真实商品：羊毛毡立体蘑菇手提包
+
+商品 ID 为 `felt-mushroom-bag`，在“羊毛毡生活好物”分类，90 元/个。三款原图直接来自用户上传的 `001.zip`，没有裁切、调色或重新压缩：
+
+| 上传文件 | 款式 | 项目文件 |
+| --- | --- | --- |
+| 01.jpg | 浅灰色 | public/images/felt-mushroom-bag/light-gray.jpg |
+| 02.jpg | 浅薄荷绿 | public/images/felt-mushroom-bag/light-mint.jpg |
+| 03.jpg | 亮蓝色 | public/images/felt-mushroom-bag/bright-blue.jpg |
+
+该商品没有通用展示照片，`images` 为空，每款只展示自己的照片。可选 `coverImage` 只用于首页封面，不作为其他款式的备用照片；因此首页可以显示浅灰实物图，但浅薄荷绿、亮蓝色不会混入浅灰照片。`demo:false` 标记真实商品，`unit:'个'` 用于清单单位。原有六件演示商品保留。

@@ -12,4 +12,4 @@ export function sanitizeCart(value) {
   return result;
 }
 export function total(cart) { return cart.reduce((sum,item)=>sum+products.find(p=>p.id===item.id).price*item.quantity,0); }
-export function listText(cart) { return ['山间来信 · 选购清单（演示）',...cart.map(item=>{const p=products.find(p=>p.id===item.id);return `${p.name} / ${item.variant} × ${item.quantity}  ¥${p.price*item.quantity}`;}),`参考合计：¥${total(cart)}`,'仅为选购意向，非订单；请与店主确认库存、运费及最终价格。'].join('\n'); }
+export function listText(cart) { return [cart.some(item=>products.find(p=>p.id===item.id)?.demo!==false)?'山间来信 · 选购清单（含演示商品）':'山间来信 · 选购清单',...cart.map(item=>{const p=products.find(p=>p.id===item.id);return `${p.name} / ${item.variant} × ${item.quantity}  ¥${p.price*item.quantity}`;}),`参考合计：¥${total(cart)}`,'仅为选购意向，非订单；请与店主确认库存、运费及最终价格。'].join('\n'); }

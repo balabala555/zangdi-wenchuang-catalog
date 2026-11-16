@@ -1,4 +1,4 @@
-export const categories = ['全部好物', '随身饰物', '织物布艺', '器物生活', '纸间心意'];
+export const categories = ['全部好物', '随身饰物', '织物布艺', '器物生活', '纸间心意', '羊毛毡生活好物'];
 export const products = [
   {id:'p01',name:'山色 · 编织手绳',category:'随身饰物',price:68,tag:'人气之选',image:null,subtitle:'一抹高原色，系住小小心愿',material:'棉线 / 合金配饰',size:'可调节围度约 14–22cm',description:'将高原的赭红、松绿与暖金织进一根手绳。轻巧的日常配饰，也是一份随身的小小心意。演示设计，非宗教用品。',variants:['赭红','松绿','暖金']},
   {id:'p02',name:'经纬 · 山纹织物袋',category:'织物布艺',price:128,tag:'日常相伴',image:null,subtitle:'装下日常，也装下一点远方',material:'棉麻混纺',size:'约 30 × 34cm',description:'以层叠山峦为灵感的几何纹样，搭配自然棉麻质感。通勤、散步或小小出走，都有轻松的陪伴。',variants:['亚麻原色','山岩棕']},
@@ -11,3 +11,20 @@ export const products = [
 // New fields are optional; empty arrays intentionally preserve honest missing-photo placeholders.
 products[0].images = [];
 products[0].variantImages = {'赭红': [], '松绿': [], '暖金': []};
+
+// Uploaded originals: 001.zip / 01.jpg, 02.jpg, 03.jpg; keep each color isolated.
+products.push({
+  id:'felt-mushroom-bag', name:'羊毛毡立体蘑菇手提包', category:'羊毛毡生活好物',
+  price:90, unit:'个', tag:'实物展示', demo:false,
+  image:null, coverImage:'public/images/felt-mushroom-bag/light-gray.jpg',
+  images:[],
+  subtitle:'立体蘑菇小屋与花朵装饰', material:'羊毛毡',
+  size:'长约27cm，高约27cm（不含提手）',
+  description:'立体蘑菇小屋、花朵装饰，呈现手工羊毛毡质感。提供浅灰色、浅薄荷绿、亮蓝色三种款式。',
+  variants:['浅灰色','浅薄荷绿','亮蓝色'],
+  variantImages:{
+    '浅灰色':['public/images/felt-mushroom-bag/light-gray.jpg'],
+    '浅薄荷绿':['public/images/felt-mushroom-bag/light-mint.jpg'],
+    '亮蓝色':['public/images/felt-mushroom-bag/bright-blue.jpg']
+  }
+});

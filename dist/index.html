@@ -41,7 +41,7 @@
 <footer><span>山间来信 <small>LETTERS FROM TIBET</small></span><p>第一期 · 演示商品，仅作原型展示<br>不支持在线支付 · 选购清单可发给店主确认</p><a href="#">回到顶部 ↑</a></footer>
 <dialog id="detail" aria-labelledby="detail-title"></dialog><dialog id="list-dialog" aria-labelledby="list-title"></dialog><div id="toast" role="status" aria-live="polite"></div><script>
 (()=>{
-const categories = ['全部好物', '随身饰物', '织物布艺', '器物生活', '纸间心意'];
+const categories = ['全部好物', '随身饰物', '织物布艺', '器物生活', '纸间心意', '羊毛毡生活好物'];
 const products = [
   {id:'p01',name:'山色 · 编织手绳',category:'随身饰物',price:68,tag:'人气之选',image:null,subtitle:'一抹高原色，系住小小心愿',material:'棉线 / 合金配饰',size:'可调节围度约 14–22cm',description:'将高原的赭红、松绿与暖金织进一根手绳。轻巧的日常配饰，也是一份随身的小小心意。演示设计，非宗教用品。',variants:['赭红','松绿','暖金']},
   {id:'p02',name:'经纬 · 山纹织物袋',category:'织物布艺',price:128,tag:'日常相伴',image:null,subtitle:'装下日常，也装下一点远方',material:'棉麻混纺',size:'约 30 × 34cm',description:'以层叠山峦为灵感的几何纹样，搭配自然棉麻质感。通勤、散步或小小出走，都有轻松的陪伴。',variants:['亚麻原色','山岩棕']},
@@ -54,6 +54,23 @@ const products = [
 // New fields are optional; empty arrays intentionally preserve honest missing-photo placeholders.
 products[0].images = [];
 products[0].variantImages = {'赭红': [], '松绿': [], '暖金': []};
+
+// Uploaded originals: 001.zip / 01.jpg, 02.jpg, 03.jpg; keep each color isolated.
+products.push({
+  id:'felt-mushroom-bag', name:'羊毛毡立体蘑菇手提包', category:'羊毛毡生活好物',
+  price:90, unit:'个', tag:'实物展示', demo:false,
+  image:null, coverImage:'public/images/felt-mushroom-bag/light-gray.jpg',
+  images:[],
+  subtitle:'立体蘑菇小屋与花朵装饰', material:'羊毛毡',
+  size:'长约27cm，高约27cm（不含提手）',
+  description:'立体蘑菇小屋、花朵装饰，呈现手工羊毛毡质感。提供浅灰色、浅薄荷绿、亮蓝色三种款式。',
+  variants:['浅灰色','浅薄荷绿','亮蓝色'],
+  variantImages:{
+    '浅灰色':['public/images/felt-mushroom-bag/light-gray.jpg'],
+    '浅薄荷绿':['public/images/felt-mushroom-bag/light-mint.jpg'],
+    '亮蓝色':['public/images/felt-mushroom-bag/bright-blue.jpg']
+  }
+});
 
 function sanitizeCart(value) {
   if (!Array.isArray(value)) return [];
@@ -68,7 +85,7 @@ function sanitizeCart(value) {
   return result;
 }
 function total(cart) { return cart.reduce((sum,item)=>sum+products.find(p=>p.id===item.id).price*item.quantity,0); }
-function listText(cart) { return ['山间来信 · 选购清单（演示）',...cart.map(item=>{const p=products.find(p=>p.id===item.id);return `${p.name} / ${item.variant} × ${item.quantity}  ¥${p.price*item.quantity}`;}),`参考合计：¥${total(cart)}`,'仅为选购意向，非订单；请与店主确认库存、运费及最终价格。'].join('\n'); }
+function listText(cart) { return [cart.some(item=>products.find(p=>p.id===item.id)?.demo!==false)?'山间来信 · 选购清单（含演示商品）':'山间来信 · 选购清单',...cart.map(item=>{const p=products.find(p=>p.id===item.id);return `${p.name} / ${item.variant} × ${item.quantity}  ¥${p.price*item.quantity}`;}),`参考合计：¥${total(cart)}`,'仅为选购意向，非订单；请与店主确认库存、运费及最终价格。'].join('\n'); }
 
 // Only uploaded same-site raster photos are accepted. Never borrow another variant's photos.
 function photoPath(value) {
@@ -105,7 +122,7 @@ function drawPhoto(ctx, image, x, y, width, height) {
 
 const $=s=>document.querySelector(s);
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function imageMarkup(p, className='', photo=publicPhotos(p)[0]) {
+function imageMarkup(p, className='', photo=photoPath(p.coverImage) || publicPhotos(p)[0]) {
   const placeholder=`<div class="image-placeholder ${className}" role="img" aria-label="${escapeHTML(p.name)}，商品图片待上传"><span class="placeholder-symbol" aria-hidden="true">＋</span><strong>商品图片待上传</strong><small>临时占位 · 非商品实拍</small></div>`;
   if (!photo) return placeholder;
   // Relative, same-site images keep subdirectory deployments working.
@@ -132,7 +149,7 @@ $('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-ca
 $('#search').addEventListener('input',e=>{query=e.target.value.trim();renderProducts();});
 $('#products').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(b)openDetail(b.dataset.product);});
 function openDetail(id){selected=products.find(p=>p.id===id);variant=selected.variants[0];quantity=1;photoIndex=0;renderDetail();$('#detail').showModal();}
-function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / DEMO COLLECTION</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div><div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">演示商品 · 加入清单不代表下单，无需支付</p></div></div>`;renderGallery();}
+function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div><div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div></div>`;renderGallery();}
 function renderGallery(){
   const {photos,generic}=productGallery(selected,variant);
   photoIndex=Math.max(0,Math.min(photoIndex,photos.length-1));
@@ -163,7 +180,7 @@ $('#detail').addEventListener('click',e=>{
   if(e.target.closest('#add-cart')){const old=cart.find(i=>i.id===selected.id&&i.variant===variant);if(old)old.quantity=Math.min(99,old.quantity+quantity);else cart.push({id:selected.id,variant,quantity});save();$('#detail').close();toast('已加入清单，喜欢的好物已为你记下');}
 });
 function renderList(){
-  $('#list-dialog').innerHTML=`<div class="list-content"><button class="close" data-close aria-label="关闭选购清单">×</button><p class="eyebrow">YOUR LITTLE COLLECTION</p><h2 id="list-title">我的选购清单</h2><p class="small-note">先收集喜欢，再与店主确认。清单仅保存在当前浏览器。</p>${cart.length?cart.map((i,index)=>{const p=products.find(p=>p.id===i.id);return `<article class="list-item">${imageMarkup(p,'list-thumbnail',cartPhoto(p,i.variant))}<div class="list-item-info"><h3>${p.name}</h3><p>${i.variant} · ¥${p.price.toFixed(2)} / 件</p><div class="quantity"><button data-index="${index}" data-change="-1" aria-label="减少${p.name}数量" ${i.quantity===1?'disabled':''}>−</button><span>${i.quantity}</span><button data-index="${index}" data-change="1" aria-label="增加${p.name}数量" ${i.quantity===99?'disabled':''}>+</button></div><button class="remove" data-remove="${index}">移除</button></div><span class="price">¥${p.price*i.quantity}</span></article>`;}).join('')+`<div class="list-total"><span>参考合计</span><strong>¥ ${total(cart).toFixed(2)}</strong></div><p class="small-note">不含运费；库存、运费与成交价格请联系店主确认。当前为演示商品。</p><div class="list-actions"><button class="primary" id="export-image">保存图片清单</button><button class="secondary" id="copy-list">复制文字清单</button></div><p class="small-note">可将清单发给店主；微信内若无法下载图片，可复制文字或截图发送。</p>`:'<div class="empty">清单还是空的。<br>去挑一件让你心动的好物吧。<br><button class="secondary" data-close>继续逛逛</button></div>'}</div>`;
+  $('#list-dialog').innerHTML=`<div class="list-content"><button class="close" data-close aria-label="关闭选购清单">×</button><p class="eyebrow">YOUR LITTLE COLLECTION</p><h2 id="list-title">我的选购清单</h2><p class="small-note">先收集喜欢，再与店主确认。清单仅保存在当前浏览器。</p>${cart.length?cart.map((i,index)=>{const p=products.find(p=>p.id===i.id);return `<article class="list-item">${imageMarkup(p,'list-thumbnail',cartPhoto(p,i.variant))}<div class="list-item-info"><h3>${p.name}</h3><p>${i.variant} · ¥${p.price.toFixed(2)} / ${p.unit || '件'}</p><div class="quantity"><button data-index="${index}" data-change="-1" aria-label="减少${p.name}数量" ${i.quantity===1?'disabled':''}>−</button><span>${i.quantity}</span><button data-index="${index}" data-change="1" aria-label="增加${p.name}数量" ${i.quantity===99?'disabled':''}>+</button></div><button class="remove" data-remove="${index}">移除</button></div><span class="price">¥${p.price*i.quantity}</span></article>`;}).join('')+`<div class="list-total"><span>参考合计</span><strong>¥ ${total(cart).toFixed(2)}</strong></div><p class="small-note">不含运费；库存、运费与成交价格请联系店主确认。清单仅为选购意向。</p><div class="list-actions"><button class="primary" id="export-image">保存图片清单</button><button class="secondary" id="copy-list">复制文字清单</button></div><p class="small-note">可将清单发给店主；微信内若无法下载图片，可复制文字或截图发送。</p>`:'<div class="empty">清单还是空的。<br>去挑一件让你心动的好物吧。<br><button class="secondary" data-close>继续逛逛</button></div>'}</div>`;
 }
 $('#open-list').addEventListener('click',()=>{renderList();$('#list-dialog').showModal();});
 $('#list-dialog').addEventListener('click',async e=>{
@@ -175,11 +192,12 @@ $('#list-dialog').addEventListener('click',async e=>{
 });
 async function exportImage(){
   const exportCart=cart.map(item=>({...item}));
+  const hasDemo=exportCart.some(item=>products.find(p=>p.id===item.id)?.demo!==false);
   const button=$('#export-image');button.disabled=true;button.textContent='正在生成…';
   try{
     await document.fonts.ready;
     const canvas=document.createElement('canvas');canvas.width=900;canvas.height=270+exportCart.length*155+160;const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';ctx.fillText('山间来信 · 选购清单',50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText('LETTERS FROM TIBET / DEMO COLLECTION',50,110);ctx.fillText('演示商品 · 选购意向，非正式订单',50,155);
+    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';ctx.fillText('山间来信 · 选购清单',50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText('LETTERS FROM TIBET / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
     for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
       const photo=cartPhoto(p,i.variant);
       if(photo){try{const img=await loadPhoto(photo);ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,img,50,y,105,120);}catch{/* Keep placeholder on failed photo; never substitute another variant. */}}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
