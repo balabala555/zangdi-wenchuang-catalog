@@ -3,3 +3,6 @@ node_modules/
 *.log
 test-results/
 dist/
+
+# Private unwatermarked uploads: never commit or serve.
+.private-originals/

@@ -21,7 +21,8 @@ export function cartPhoto(product, variant) { return productGallery(product,vari
 export function photoUrl(path, size='detail') {
   if (!photoPath(path)) throw new Error('Invalid photo path');
   if(typeof embeddedPhotos !== 'undefined' && embeddedPhotos[path])return embeddedPhotos[path];
-  return './'+(optimizedPhotos[path]?.[size]?.path || path);
+  const entry=optimizedPhotos[path];
+  return './'+(entry?.[size]?.path || entry?.public?.path || path);
 }
 export function photoSrcset(path, size='detail') {
   if(typeof embeddedPhotos !== 'undefined')return '';

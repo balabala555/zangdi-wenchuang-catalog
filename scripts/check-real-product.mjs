@@ -37,6 +37,23 @@ try{
  assert.equal(await download.failure(),null);assert.match(download.suggestedFilename(),/\.png$/);
  const drawn=await page.evaluate(()=>window.drawnPhotos);
  assert.deepEqual(drawn.map(p=>p.split('/').pop()),['light-gray.jpg','light-mint.jpg','bright-blue.jpg'].map(file=>photoUrl('public/images/felt-mushroom-bag/'+file,'thumb').split('/').pop()));
+ const checkedPixels=await page.evaluate(async()=>{
+  const preview=document.querySelector('#export-preview');await preview.decode();
+  const canvas=document.createElement('canvas');canvas.width=preview.naturalWidth;canvas.height=preview.naturalHeight;
+  const context=canvas.getContext('2d');context.drawImage(preview,0,0);
+  const sources=window.drawnPhotos.filter(p=>p.includes('/optimized/')).slice(0,3);
+  for(let index=0;index<3;index++){
+   const image=new Image();image.src=sources[index];await image.decode();
+   const expected=document.createElement('canvas');expected.width=105;expected.height=120;
+   const ctx=expected.getContext('2d');ctx.fillStyle='#e9e3d7';ctx.fillRect(0,0,105,120);
+   const scale=Math.min(105/image.naturalWidth,120/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+   ctx.drawImage(image,(105-w)/2,(120-h)/2,w,h);
+   const a=ctx.getImageData(0,0,105,120).data,b=context.getImageData(50,205+index*155,105,120).data;
+   if(!a.every((v,i)=>v===b[i]))return false;
+  }
+  return true;
+ });
+ assert.equal(checkedPixels,true,'PNG photo pixels must match each selected watermarked thumbnail');
  assert.deepEqual(errors,[]);
  console.log('PASS real photos: category, three colors load/decode, no mixed gallery, three cart rows, total ¥270, text copy and PNG download with matching original photos');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

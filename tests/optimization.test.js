@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import {optimizedPhotos} from '../src/generated-images.js';
 import {photoUrl,photoSrcset} from '../src/images.js';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-test('renditions match manifests, are bounded and preserve full-size original photo pixels',async()=>{
+test('watermarked renditions match manifests, are bounded and match correct public variants',async()=>{
  let originalTotal=0,thumbTotal=0,cardTotal=0;
  for(const [source,entry] of Object.entries(optimizedPhotos)){
   const original=await readFile(new URL('../'+source,import.meta.url));originalTotal+=original.length;
@@ -17,8 +17,9 @@ test('renditions match manifests, are bounded and preserve full-size original ph
    assert.equal(hash(bytes),entry[size].sha256);assert.equal(bytes.length,entry[size].bytes);
    const metadata=await sharp(bytes).metadata();assert.ok(metadata.width<=max && metadata.height<=max);
    if(size!=='detail')assert.equal(metadata.isProgressive,false);
+   assert.equal(entry.watermarkVersion,'zh-tashi-duck-v1');
   }
-  // Current three originals fit the detail dimensions: no re-coloring, sharpening or cropping.
+  // The compatibility fallback and current detail rendition carry the same watermark.
   const detail=await readFile(new URL('../'+entry.detail.path,import.meta.url));
   const raw=await sharp(original).rotate().toColourspace('srgb').raw().toBuffer();
   const metadata=await sharp(original).metadata();

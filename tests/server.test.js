@@ -41,6 +41,7 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     assert.equal(original.headers.get('cache-control'),'public, max-age=0, must-revalidate');
     const missing=await fetch(new URL('public/images/missing.jpg',base));assert.equal(missing.status,404);assert.doesNotMatch(await missing.text(),/<!doctype/i);
     assert.equal((await fetch(new URL('.git/config',base))).status,404);
+    assert.equal((await fetch(new URL('.private-originals/felt-mushroom-bag/light-gray.jpg',base))).status,404);
     assert.equal((await fetch(base,{method:'POST'})).status,405);
     if(basePath!=='/')assert.equal((await fetch(origin+basePath,{redirect:'manual'})).headers.get('location'),basePath+'/');
   }finally{await new Promise(resolve=>server.close(resolve));}

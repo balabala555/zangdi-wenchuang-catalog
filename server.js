@@ -3,12 +3,14 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {optimizedPhotos} from './src/generated-images.js';
 import {buildPreview} from './build.js';
 const root=path.dirname(fileURLToPath(import.meta.url));
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 export function createServer({basePath='/'}={}){
   const base='/'+basePath.split('/').filter(Boolean).join('/');
   const prefix=base==='/'?'':base;
+  const immutablePhotos=new Set(Object.values(optimizedPhotos).flatMap(entry=>['thumb','card','detail'].map(size=>'/'+entry[size].path)));
   return http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost');
@@ -29,7 +31,7 @@ export function createServer({basePath='/'}={}){
       if(pathname.startsWith('/public/images/')){
         const etag='"'+createHash('sha256').update(body).digest('hex')+'"';
         headers.ETag=etag;
-        headers['Cache-Control']=/^\/public\/images\/optimized\/[a-f0-9]{24}-(thumb|card|detail)\.(webp|jpe?g|png)$/.test(pathname)?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate';
+        headers['Cache-Control']=immutablePhotos.has(pathname)?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate';
         if(req.headers['if-none-match']===etag){res.writeHead(304,headers);return res.end();}
       }
       res.writeHead(200,headers);

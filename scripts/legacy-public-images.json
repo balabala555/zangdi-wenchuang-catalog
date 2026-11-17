@@ -1,0 +1,44 @@
+{
+  "public/images/felt-mushroom-bag/bright-blue.jpg": [
+    {
+      "path": "public/images/optimized/d8e78608bc284a0f7fdb91ae-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/d906aa59281c533c87db0731-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/1de319e2d13a666f1ce8a442-detail.jpg",
+      "size": "detail"
+    }
+  ],
+  "public/images/felt-mushroom-bag/light-gray.jpg": [
+    {
+      "path": "public/images/optimized/550eb668b26ff920aaab3139-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/0921c82c10b339982338b3d1-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/08cf043eaa6fea0bcd0d63be-detail.jpg",
+      "size": "detail"
+    }
+  ],
+  "public/images/felt-mushroom-bag/light-mint.jpg": [
+    {
+      "path": "public/images/optimized/092bd74135b4a87f0b780191-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/004ac6e789a3cb77059dbdcd-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/02c229eb1529e4d4a6e52858-detail.jpg",
+      "size": "detail"
+    }
+  ]
+}
