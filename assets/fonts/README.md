@@ -18,3 +18,10 @@ https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChi
 https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Medium.otf
 
 Medium WOFF2 SHA-256：e80ff529568ec8782607611c01c06eb5c956dc1ee27bb5809ad12b12e0781090
+
+
+## V4 宋体品牌标识
+
+新增 Noto Serif CJK SC Regular，SIL OFL 1.1（同目录 OFL.txt），来自系统安装的官方 Noto Serif CJK 字体集合；上游：https://github.com/notofonts/noto-cjk/tree/main/Serif 。保留字体名称和版权信息，裁剪 ASCII、Latin-1（含副标题中间点）、基本汉字、中文标点和全角字符后保存为 WOFF2。仅本地构建使用，不随网页请求字体；免费开源，无需用户安装 Python 或系统中文字体。
+
+SHA-256：fdd406fcc79dfe81231281e26605eeb6f28e2380660e5b92fae73af14c0480ab

@@ -23,6 +23,30 @@
     {
       "path": "public/images/optimized/6c820e032aea6d2638152f2a-detail.jpg",
       "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/4a27a58de0c930bf1f7314c1-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/0783c9d91986d07d193b7b76-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/a215b278ca5886e8c347ea55-detail.jpg",
+      "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/d87cff642be7f146ce35e2b3-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/5f393e6312137a107f9a7cf9-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/5756fe356c9228c62b0a96ae-detail.jpg",
+      "size": "detail"
     }
   ],
   "public/images/felt-mushroom-bag/light-gray.jpg": [
@@ -49,6 +73,30 @@
     {
       "path": "public/images/optimized/5606537bb6a2f98a8018f3a2-detail.jpg",
       "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/176940da12b665f49c828922-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/9a7f85cada394d3b0d18859b-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/6bd538c2fb3848eb9fbea326-detail.jpg",
+      "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/4b2179e7de6f7f9d27601251-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/26cc66d78543a8856f4a4115-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/edb330e9d69c60091f97b1cb-detail.jpg",
+      "size": "detail"
     }
   ],
   "public/images/felt-mushroom-bag/light-mint.jpg": [
@@ -74,6 +122,30 @@
     },
     {
       "path": "public/images/optimized/1b4689874cfcd66330a1ca8c-detail.jpg",
+      "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/0a230d5b26cbce79f6674bba-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/b25cadcfffcdc92df3b728d7-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/df44a3f440785be7bb6da7b8-detail.jpg",
+      "size": "detail"
+    },
+    {
+      "path": "public/images/optimized/8d52aa2e8db4d82542452239-thumb.webp",
+      "size": "thumb"
+    },
+    {
+      "path": "public/images/optimized/39ed52e99082b6ef154bb570-card.webp",
+      "size": "card"
+    },
+    {
+      "path": "public/images/optimized/19d61acb0eeae1a7b143de09-detail.jpg",
       "size": "detail"
     }
   ]

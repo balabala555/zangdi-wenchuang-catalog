@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {brandConfig,validateBrand,brandMissing,contactLines,brandFooter,pageWatermarkSvg,loadBrandQrs} from '../src/brand.js';
-import {watermarkSvg,adaptiveInk,contrastOutline} from '../scripts/watermark-renderer.mjs';
+import {watermarkSvg,adaptiveInk,contrastOutline,brandMarkSvg,signatureSvg} from '../scripts/watermark-renderer.mjs';
 const fixture=()=>({...brandConfig,name:'测试商家',customerServices:[{label:'客服1',wechatId:'test_service_01',qrCodePath:'public/branding/customer1.png'},{label:'客服2',wechatId:'test_service_02',qrCodePath:'public/branding/customer2.png'}],websiteUrl:'https://example.test/catalog',showWebsiteUrl:true,imageWatermark:{...brandConfig.imageWatermark},pageWatermark:{...brandConfig.pageWatermark}});
 test('merchant configuration validates both contacts, opacity, scale, angles and URL opt-in',()=>{
  assert.equal(validateBrand(fixture()).customerServices[0].wechatId,'test_service_01');
- assert.equal(brandConfig.imageWatermark.fontScale,0.7);assert.equal(brandConfig.imageWatermark.opacity,0.6);assert.equal(brandConfig.imageWatermark.angle,-25);
+ assert.equal(brandConfig.imageWatermark.fontScale,0.3);assert.equal(brandConfig.imageWatermark.opacity,0.6);assert.equal(brandConfig.imageWatermark.angle,-25);
  for(const change of [{websiteUrl:'javascript:alert(1)'},{websiteUrl:'https://user:secret@example.test'},{customerServices:[{label:'x',wechatId:'bad\nvalue'}]},{customerServices:[{label:'x',wechatId:'test_id',qrCodePath:'public/branding/../secret.png'}]},{imageWatermark:{...brandConfig.imageWatermark,opacity:1.2}},{imageWatermark:{...brandConfig.imageWatermark,outlineRatio:-0.1}},{imageWatermark:{...brandConfig.imageWatermark,fontAssetPath:'../private.woff2'}}])assert.throws(()=>validateBrand({...fixture(),...change}));
 });
 test('real contact IDs are configured globally; QR paths are configured and websites stay hidden',async()=>{
@@ -59,4 +59,28 @@ test('medium-weight outlined watermark has stronger raster ink than the previous
   assert.ok(current.peak>=150 && current.peak<=154,'Combined fill/outline must remain at 60%, without stacked opacity');
   assert.ok(current.peak>old.peak+40);
  }
+});
+
+test('brand identity text is exact and registered trademark use is disabled',()=>{
+ assert.equal(brandConfig.name,'扎西德勒鸭');
+ assert.equal(brandConfig.englishName,'TIBETAN CRAFTS');
+ assert.equal(brandConfig.subtitle,'藏地风物 · 生活美学');
+ assert.equal(brandConfig.useRegisteredTrademark,false);
+ assert.deepEqual(brandConfig.customerServices.map(service=>[service.wechatId,service.qrCodePath]),[
+  ['15289007429','public/branding/wechat-15289007429.jpg'],
+  ['18673575510','public/branding/wechat-18673575510.jpg'],
+ ]);
+ assert.throws(()=>validateBrand({...brandConfig,useRegisteredTrademark:true}),/separate confirmation/);
+});
+
+test('three-layer text comes from exact configuration, with serif artwork and no registered mark',async()=>{
+ const {create}=await import('fontkit');const {readFile}=await import('node:fs/promises');
+ const face=create(await readFile(brandConfig.brandVisual.fontAssetPath));assert.equal(face.postscriptName,'NotoSerifCJKsc-Regular');
+ const text=[brandConfig.name,brandConfig.englishName,brandConfig.subtitle,...brandConfig.customerServices.map(service=>service.label+'微信：'+service.wechatId)].join(' ');
+ assert.ok(face.layout(text).glyphs.every(glyph=>glyph.id>0),'Every confirmed character must have a real glyph, including the subtitle middle dot');
+ const logo=(await brandMarkSvg(330,'#42483e')).toString(),footer=(await signatureSvg(1100,132)).toString();
+ for(const value of [brandConfig.name,brandConfig.englishName,brandConfig.subtitle])assert.ok(logo.includes(value));
+ for(const service of brandConfig.customerServices)assert.ok(footer.includes(service.wechatId));
+ for(const artwork of [logo,footer]){assert.doesNotMatch(artwork,/<text/);assert.ok(artwork.includes('<polyline'));assert.ok(!artwork.includes(String.fromCharCode(0x00ae)));}
+ assert.throws(()=>validateBrand({...brandConfig,name:brandConfig.name+String.fromCharCode(0x00ae)}));
 });

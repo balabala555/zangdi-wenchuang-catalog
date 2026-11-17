@@ -85,3 +85,8 @@ body::after,dialog::after{content:"";position:fixed;inset:0;pointer-events:none;
 
 .contact-qr-button span{display:block;font-size:10px;line-height:1.6;color:var(--accent);margin-top:3px}
 #contact-dialog>.close{position:sticky;top:8px;float:right;margin:8px 8px 0 0}
+
+/* Three-layer product artwork stays completely visible, including its signature. */
+.product-image .photo-frame img{object-fit:contain}
+.brand .seal{border:0;width:54px;height:36px}
+.brand .seal svg{display:block;width:100%;height:100%}

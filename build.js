@@ -15,7 +15,7 @@ export async function buildPreview(){
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
   for(const photo of paths){
-    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-adaptive-v3')throw new Error('Missing verified watermarked rendition: '+photo);
+    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-three-layer-v4')throw new Error('Missing verified watermarked rendition: '+photo);
     const rendition=optimizedPhotos[photo].detail.path;
     const bytes=(await stat(path.join(root,rendition))).size;
     if(embeddedBytes+bytes>maxEmbeddedBytes)continue;

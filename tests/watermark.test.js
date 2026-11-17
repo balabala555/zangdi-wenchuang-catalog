@@ -5,6 +5,7 @@ import {existsSync,readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
+import {brandConfig} from '../src/brand.js';
 import {optimizedPhotos} from '../src/generated-images.js';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 test('watermarks are baked into all sizes; private originals remain untouched',async t=>{
@@ -14,9 +15,10 @@ test('watermarks are baked into all sizes; private originals remain untouched',a
   const original=await readFile(privateFile);assert.equal(hash(original),entry.sourceSha256);
   assert.notEqual(hash(await readFile(source)),entry.sourceSha256);
   for(const [size,max] of [['thumb',240],['card',640]]){
-   const base=await sharp(original).rotate().resize({width:max,height:max,fit:'inside',withoutEnlargement:true}).withIccProfile('srgb').png().toBuffer();
+   const composition=entry[size];
+   const base=await sharp(original).rotate().resize({width:composition.resizeWidth,height:composition.resizeHeight,fit:'inside',withoutEnlargement:true}).withIccProfile('srgb').png().toBuffer();
    const a=await sharp(base).removeAlpha().raw().toBuffer({resolveWithObject:true});
-   const b=await sharp(await readFile(entry[size].path)).removeAlpha().raw().toBuffer();
+   const b=await sharp(await readFile(entry[size].path)).extract({left:0,top:0,width:composition.photoWidth,height:composition.photoHeight}).removeAlpha().raw().toBuffer();
    assert.equal(a.data.length,b.length);
    let changed=0,central=0;
    for(let i=0;i<b.length;i+=3){
@@ -27,6 +29,16 @@ test('watermarks are baked into all sizes; private originals remain untouched',a
    const ratio=changed/(a.info.width*a.info.height);
    assert.ok(ratio>0.01 && ratio<0.35,`${size} watermark coverage: ${ratio}`);
    assert.ok(central>100,'Watermarks must be inside the picture, not just corners');
+   for(let y=Math.ceil(composition.photoHeight*0.68);y<Math.floor(composition.photoHeight*0.94);y++){
+    for(let x=Math.ceil(composition.photoWidth*0.13);x<Math.floor(composition.photoWidth*0.88);x++){
+     const offset=(y*composition.photoWidth+x)*3;
+     assert.deepEqual(b.subarray(offset,offset+3),a.data.subarray(offset,offset+3),'Lower product artwork must remain unobscured');
+    }
+   }
+   const sourceInfo=await sharp(original).rotate().metadata();
+   assert.ok(Math.abs(composition.photoWidth/composition.photoHeight-sourceInfo.width/sourceInfo.height)<0.006,'Original subject aspect ratio must be preserved');
+   const corner=await sharp(await readFile(entry[size].path)).extract({left:0,top:composition.photoHeight,width:1,height:1}).removeAlpha().raw().toBuffer();
+   assert.deepEqual([...corner],[1,3,5].map(index=>parseInt(brandConfig.brandVisual.footer.background.slice(index,index+2),16)),'Signature must be outside the photo on the configured paper background');
   }
   for(const legacy of entry.legacy){assert.equal(hash(await readFile(legacy.path)),legacy.sha256);assert.notEqual(legacy.sha256,entry.sourceSha256);}
  }
