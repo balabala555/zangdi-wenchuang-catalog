@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
+import {readFile} from 'node:fs/promises';
 import {createServer} from '../server.js';
 
 for(const basePath of ['/', '/catalog'])test(`preview resources work under ${basePath}`,async()=>{
@@ -22,6 +23,13 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     assert.ok(download.headers.get('content-type').startsWith('text/html'));
     const exported=await download.text();assert.match(exported,/<style>/);assert.match(exported,/<script>/);
     new Script(exported.match(/<script>([\s\S]*?)<\/script>/)[1]);
+    const embedded=JSON.parse(exported.match(/const embeddedPhotos=(.*);\n/)[1]);
+    for(const name of ['light-gray.jpg','light-mint.jpg','bright-blue.jpg']){
+      const photo='public/images/felt-mushroom-bag/'+name;
+      assert.ok(embedded[photo].startsWith('data:image/jpeg;base64,'));
+      assert.deepEqual(Buffer.from(embedded[photo].split(',')[1],'base64'),await readFile(new URL('../'+photo,import.meta.url)));
+    }
+
     assert.doesNotMatch(exported,/<script[^>]+src=|<link[^>]+stylesheet|^import |id="download-page"/m);
     const missing=await fetch(new URL('public/images/missing.jpg',base));assert.equal(missing.status,404);assert.doesNotMatch(await missing.text(),/<!doctype/i);
     assert.equal((await fetch(new URL('.git/config',base))).status,404);

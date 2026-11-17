@@ -42,3 +42,10 @@ test('photo loader completes on success and rejects failed or stalled photos',as
   await assert.rejects(loadPhoto(red,5),/timeout/);
  }finally{globalThis.Image=old;}
 });
+test('photo loader rejects decode failures instead of exporting a blank image',async()=>{
+ const old=globalThis.Image;
+ try{
+  globalThis.Image=class{decode(){return Promise.reject(new Error('Decode failed'));}set src(value){queueMicrotask(()=>this.onload?.());}};
+  await assert.rejects(loadPhoto(red),/Decode failed/);
+ }finally{globalThis.Image=old;}
+});

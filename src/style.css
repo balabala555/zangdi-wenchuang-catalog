@@ -32,3 +32,29 @@
 .gallery-thumbnails strong{font:10px/1.4 sans-serif;letter-spacing:0}
 .gallery-thumbnails img{width:100%;height:100%;object-fit:contain}
 @media(max-width:760px){.gallery-stage{height:280px}.gallery-stage .detail-image.image-placeholder{height:100%}}
+
+/* Explicit dimensions avoid percentage-height and lazy-image issues in mobile dialogs. */
+.list-item>.photo-frame.list-thumbnail{width:76px;height:100px;flex:0 0 76px;padding:0}
+.list-item>.photo-frame.list-thumbnail img{width:100%;height:100%;object-fit:contain}
+.list-item-info{min-width:0;overflow-wrap:anywhere}
+dialog{max-height:90vh;max-height:90dvh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#detail[open]{display:flex;flex-direction:column;overflow:hidden}
+#detail .detail-layout{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.detail-actions{flex-shrink:0;padding:14px 22px max(14px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--paper)}
+.detail-actions .small-note{margin-bottom:0}
+#detail .close{position:absolute}
+#export-result{border-top:1px solid var(--line);margin-top:24px;padding-top:16px;scroll-margin-top:12px}
+#export-result h3{font:22px var(--serif)}
+#export-result p{font-size:12px;color:var(--muted)}
+#export-preview{display:block;width:100%;height:auto;margin-top:16px;-webkit-touch-callout:default;user-select:auto}
+#download-image{text-align:center}
+@media(max-width:760px){
+ dialog{width:calc(100% - 20px);max-height:94vh;max-height:94dvh}
+ #detail{height:94vh;height:94dvh}
+ #detail .detail-layout{display:block;flex:1}
+ .detail-actions .quantity button{min-width:44px;min-height:44px}
+ .detail-actions .primary{min-height:48px}
+ .list-item>.photo-frame.list-thumbnail{width:65px;height:87px;flex-basis:65px}
+ .list-item>.price{font-size:12px}
+ .gallery-stage{touch-action:pan-y}
+}
