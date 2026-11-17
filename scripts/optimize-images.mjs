@@ -4,14 +4,17 @@ import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {products} from '../src/data.js';
+import {brandConfig,validateBrand} from '../src/brand.js';
+import {watermarkSvg,adaptiveInk} from './watermark-renderer.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const manifestFile=path.join(root,'src/generated-images.js');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const settings={thumb:240,card:640,detail:1600};
-export const watermarkVersion='zh-tashi-duck-v1';
-const mark=await readFile(path.join(root,'assets/watermark-text.png'));
+export const watermarkVersion='merchant-adaptive-v2';
+validateBrand();
+const fontHash=hash(await readFile(path.join(root,'assets/fonts/NotoSansCJKsc-Light.woff2')));
 const legacyFiles=JSON.parse(await readFile(path.join(root,'scripts/legacy-public-images.json'),'utf8'));
-const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,mark:hash(mark),encoding:'lossless-webp-or-jpeg94-srgb',layout:'3-interior-lines-v2'});
+const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,fontHash,brand:{name:brandConfig.name,contacts:brandConfig.customerServices.map(service=>service.wechatId),watermark:brandConfig.imageWatermark},encoding:'lossless-webp-or-jpeg94-srgb',layout:'3-interior-lines-v2'});
 const sources=[...new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).filter(Boolean))].sort();
 let previous={};
 try{previous=JSON.parse((await readFile(manifestFile,'utf8')).split('export const optimizedPhotos = ')[1].trim().replace(/;$/,''));}catch{}
@@ -42,8 +45,17 @@ for(const source of sources){
  async function marked(width){
   const base=await sharp(original).rotate().resize({width,height:width,fit:'inside',withoutEnlargement:true}).withIccProfile('srgb').png().toBuffer({resolveWithObject:true});
   const w=base.info.width,h=base.info.height;
-  const strip=await sharp(mark).resize({width:Math.max(1,Math.round(w*0.53))}).rotate(-18,{background:'#00000000'}).resize({width:Math.floor(w*0.75),height:Math.max(1,Math.floor(h*0.23)),fit:'inside',withoutEnlargement:true}).png().toBuffer({resolveWithObject:true});
-  const overlays=[[0.06,0.27],[0.36,0.49],[0.08,0.74]].map(([x,y])=>({input:strip.data,left:Math.min(Math.round(w*x),w-strip.info.width),top:Math.min(Math.round(h*y),h-strip.info.height)}));
+  const overlays=[];
+  for(const [index,[x,y]] of [[0.06,0.22],[0.36,0.47],[0.08,0.72]].entries()){
+    const left=Math.round(w*x),top=Math.round(h*y),regionWidth=Math.max(1,Math.min(Math.round(w*0.53),w-left)),regionHeight=Math.max(1,Math.min(Math.round(h*0.16),h-top));
+    const sample=await sharp(base.data).extract({left,top,width:regionWidth,height:regionHeight}).removeAlpha().raw().toBuffer({resolveWithObject:true});
+    let sum=0;
+    for(let i=0;i<sample.data.length;i+=sample.info.channels)sum+=sample.data[i]*0.2126+sample.data[i+1]*0.7152+sample.data[i+2]*0.0722;
+    const luminance=sum/(sample.info.width*sample.info.height*255);
+    const svg=await watermarkSvg(w,adaptiveInk(luminance),brandConfig,index);
+    const strip=await sharp(svg).rotate(brandConfig.imageWatermark.angle,{background:'#00000000'}).resize({width:Math.max(1,Math.floor(w*0.62)),height:Math.max(1,Math.floor(h*0.23)),fit:'inside',withoutEnlargement:true}).png().toBuffer({resolveWithObject:true});
+    overlays.push({input:strip.data,left:Math.min(left,w-strip.info.width),top:Math.min(top,h-strip.info.height)});
+  }
   return sharp(base.data).composite(overlays);
  }
  for(const [size,width] of Object.entries(settings)){

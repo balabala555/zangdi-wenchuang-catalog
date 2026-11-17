@@ -28,7 +28,7 @@ export function createServer({basePath='/'}={}){
       if(pathname==='/preview.html')body=body.replace('</footer>','<a id="download-page" href="./download.html" download="zangdi-catalog.html">下载离线网页 ↓</a></footer>');
       const headers={'Content-Type':types[path.extname(pathname)]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache'};
       if(pathname==='/download.html')headers['Content-Disposition']='attachment; filename="zangdi-catalog.html"';
-      if(pathname.startsWith('/public/images/')){
+      if(pathname.startsWith('/public/images/') || pathname.startsWith('/public/branding/')){
         const etag='"'+createHash('sha256').update(body).digest('hex')+'"';
         headers.ETag=etag;
         headers['Cache-Control']=immutablePhotos.has(pathname)?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate';

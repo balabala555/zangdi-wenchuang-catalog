@@ -17,7 +17,7 @@ try{
    window.shared=[];Object.defineProperty(navigator,'canShare',{value:({files})=>files[0].type==='image/png'});
    Object.defineProperty(navigator,'share',{value:async ({files})=>{window.shared.push({name:files[0].name,type:files[0].type,size:files[0].size});if(window.rejectShare)throw new DOMException('cancel','AbortError');}});
   });
-  if(standalone)await page.route('**/public/images/**',route=>route.abort());
+  if(standalone){await page.route('**/public/images/**',route=>route.abort());await page.route('**/public/branding/**',route=>route.abort());}
   await page.goto(origin+(standalone?'/preview.html':'/'));
   await page.locator('[data-product="felt-mushroom-bag"]').click();
   const action=await page.locator('#add-cart').boundingBox();assert.ok(action.y>=0 && action.y+action.height<=667);

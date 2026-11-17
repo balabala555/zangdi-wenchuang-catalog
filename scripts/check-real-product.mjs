@@ -36,7 +36,7 @@ try{
  const ready=page.waitForEvent('download');await page.locator('#download-image').click();const download=await ready;
  assert.equal(await download.failure(),null);assert.match(download.suggestedFilename(),/\.png$/);
  const drawn=await page.evaluate(()=>window.drawnPhotos);
- assert.deepEqual(drawn.map(p=>p.split('/').pop()),['light-gray.jpg','light-mint.jpg','bright-blue.jpg'].map(file=>photoUrl('public/images/felt-mushroom-bag/'+file,'thumb').split('/').pop()));
+ assert.deepEqual(drawn.filter(p=>p.includes('/optimized/')).map(p=>p.split('/').pop()),['light-gray.jpg','light-mint.jpg','bright-blue.jpg'].map(file=>photoUrl('public/images/felt-mushroom-bag/'+file,'thumb').split('/').pop()));
  const checkedPixels=await page.evaluate(async()=>{
   const preview=document.querySelector('#export-preview');await preview.decode();
   const canvas=document.createElement('canvas');canvas.width=preview.naturalWidth;canvas.height=preview.naturalHeight;

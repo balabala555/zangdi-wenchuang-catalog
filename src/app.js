@@ -1,8 +1,40 @@
+import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg} from './brand.js';
 import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
 import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
 const $=s=>document.querySelector(s);
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+validateBrand();
+const pageMark='url("data:image/svg+xml,'+encodeURIComponent(pageWatermarkSvg())+'")';
+document.documentElement.style.setProperty('--page-brand-watermark',pageMark);
+document.documentElement.style.setProperty('--page-brand-opacity',brandConfig.pageWatermark.opacity);
+document.title=brandConfig.name+' · 藏地选物';
+for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild)element.firstChild.textContent=brandConfig.name;
+function brandQrUrl(path){return typeof embeddedBrandQrs!=='undefined' && embeddedBrandQrs[path] || './'+path;}
+const contactDialog=document.createElement('dialog');contactDialog.id='contact-dialog';contactDialog.setAttribute('aria-labelledby','contact-title');document.body.append(contactDialog);
+const contactButton=document.createElement('button');contactButton.id='open-contact';contactButton.className='secondary';contactButton.textContent='微信客服';contactButton.setAttribute('aria-label','查看客服微信和二维码');document.body.append(contactButton);
+function openContacts(focusIndex=0){
+  contactDialog.innerHTML=`<button class="close" data-close aria-label="关闭客服联系区">×</button><div class="contact-content"><p class="eyebrow">${escapeHTML(brandConfig.name)}</p><h2 id="contact-title">联系微信客服</h2><p class="small-note">长按原始二维码，可识别或保存；也可复制微信号添加。</p><div class="contact-cards">${brandConfig.customerServices.map((service,index)=>`<section class="contact-card" id="service-${index}"><h3>${escapeHTML(service.label)}</h3><p class="contact-id">微信：${escapeHTML(service.wechatId)}</p>${service.qrCodePath?`<img class="contact-qr-full" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信原始二维码" loading="eager" decoding="async">`:''}<button class="secondary" data-copy-service="${index}">复制${escapeHTML(service.label)}微信号</button></section>`).join('')}</div></div>`;
+  if(!contactDialog.open)contactDialog.showModal();
+  contactDialog.querySelector('#service-'+focusIndex)?.scrollIntoView({block:'nearest'});
+}
+contactButton.addEventListener('click',()=>openContacts());
+contactDialog.addEventListener('click',async e=>{
+  if(e.target===contactDialog || e.target.closest('[data-close]')){contactDialog.close();return;}
+  const button=e.target.closest('[data-copy-service]');if(!button)return;
+  const service=brandConfig.customerServices[Number(button.dataset.copyService)];if(!service)return;
+  try{await navigator.clipboard.writeText(service.wechatId);toast(service.label+'微信号已复制');}catch{toast('请长按上方微信号复制');}
+});
+function brandContactMarkup(){
+  return `<div class="brand-contact"><strong>${escapeHTML(brandConfig.name)}</strong>${brandConfig.customerServices.map((service,index)=>`<button class="contact-copy" data-copy-contact="${index}" aria-label="复制${escapeHTML(service.label)}微信号">${escapeHTML(service.label)}微信：${escapeHTML(service.wechatId)} <span>复制</span></button>${service.qrCodePath?`<button class="contact-qr-button" data-open-service="${index}" aria-label="查看${escapeHTML(service.label)}原始微信二维码"><img class="contact-qr-mini" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信二维码，点击查看大图"><span>查看大图</span></button>`:''}`).join('')}</div>`;
+}
+$('#detail').addEventListener('click',async e=>{
+  const qrButton=e.target.closest('[data-open-service]');if(qrButton){openContacts(Number(qrButton.dataset.openService));return;}
+  const button=e.target.closest('[data-copy-contact]');if(!button)return;
+  const service=brandConfig.customerServices[Number(button.dataset.copyContact)];if(!service)return;
+  try{await navigator.clipboard.writeText(service.wechatId);toast(service.label+'微信号已复制');}
+  catch{toast('请长按客服微信号复制');}
+});
 function imageMarkup(p, className='', photo=photoPath(p.coverImage) || publicPhotos(p)[0]) {
   const placeholder=`<div class="image-placeholder ${className}" role="img" aria-label="${escapeHTML(p.name)}，商品图片待上传"><span class="placeholder-symbol" aria-hidden="true">＋</span><strong>商品图片待上传</strong><small>临时占位 · 非商品实拍</small></div>`;
   if (!photo) return placeholder;
@@ -41,7 +73,7 @@ $('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-ca
 $('#search').addEventListener('input',e=>{query=e.target.value.trim();visibleLimit=24;renderProducts();});
 $('#products').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(b)openDetail(b.dataset.product);});
 function openDetail(id){selected=products.find(p=>p.id===id);variant=selected.variants[0];quantity=1;photoIndex=0;renderDetail();$('#detail').showModal();}
-function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div></div></div><div class="detail-actions"><div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div>`;renderGallery();}
+function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div></div></div><div class="detail-actions">${brandContactMarkup()}<div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div>`;renderGallery();}
 let preloadTimer;
 function renderGallery(){
   const {photos,generic}=productGallery(selected,variant);
@@ -105,7 +137,7 @@ async function shareExport(){
   const file=exportFile,button=$('#share-image');
   if(button)button.disabled=true;
   try{
-    await navigator.share({files:[file],title:'山间来信 · 选购清单'});
+    await navigator.share({files:[file],title:brandConfig.name+' · 选购清单'});
   }catch(error){
     if(error.name!=='AbortError')toast('此浏览器暂时无法分享，请长按下方图片保存到相册');
   }finally{if(button)button.disabled=false;}
@@ -125,22 +157,24 @@ async function exportImage(){
       try{return await loadPhoto(path,8000,'thumb');}catch{throw new Error(p.name+'（'+item.variant+'）照片加载失败，请检查网络后重试');}
       })));
     }
+    const qrImages=await loadBrandQrs();
     await document.fonts.ready;
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=270+exportCart.length*155+160;const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';ctx.fillText('山间来信 · 选购清单',50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText('LETTERS FROM TIBET / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
+    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(qrImages.length?1100:690)+exportCart.length*155;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=brandConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText('LETTERS FROM TIBET / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
     for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
       if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,photos[index],50,y,105,120);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
     const y=230+exportCart.length*155;ctx.fillStyle='#343b32';ctx.font='26px sans-serif';ctx.fillText(`参考合计：¥${total(exportCart).toFixed(2)}`,50,y+30);ctx.fillStyle='#7e836f';ctx.font='17px sans-serif';ctx.fillText('请与店主确认库存、运费及最终价格。',50,y+80);ctx.fillText('图片仅供选款参考，本清单不包含支付功能。',50,y+110);
+    brandFooter(ctx,y,qrImages);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('图片生成失败，请重试');
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    clearExport();exportFile=new File([blob],'山间来信-选购清单.png',{type:'image/png'});
+    clearExport();exportFile=new File([blob],brandConfig.name+'-选购清单.png',{type:'image/png'});
     // A data URL survives browser long-press saving better than a short-lived blob URL.
     exportUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片生成失败'));reader.readAsDataURL(blob);});
     if(JSON.stringify(cart)!==snapshot){clearExport();throw new Error('清单已变化，请重新生成图片');}
     const shareable=supportsImageShare(exportFile);
     const result=document.createElement('section');result.id='export-result';
-    result.innerHTML=`<h3>图片清单已生成</h3><p class="save-image-hint"><strong>长按下方图片 → 保存到相册</strong><br>也可点击分享，将完整清单发送给微信客服。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="山间来信-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
+    result.innerHTML=`<h3>图片清单已生成</h3><p class="save-image-hint"><strong>长按下方图片 → 保存到相册</strong><br>也可点击分享，将完整清单发送给微信客服。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="${escapeHTML(brandConfig.name)}-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
     $('#list-dialog .list-content').append(result);
     $('#export-preview').src=exportUrl;$('#download-image').href=exportUrl;
     result.scrollIntoView({block:'start'});

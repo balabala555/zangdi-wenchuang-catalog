@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import {brandConfig} from '../src/brand.js';
 import {optimizedPhotos} from '../src/generated-images.js';
 import {createServer} from '../server.js';
 
@@ -24,6 +25,11 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     assert.ok(download.headers.get('content-type').startsWith('text/html'));
     const exported=await download.text();assert.match(exported,/<style>/);assert.match(exported,/<script>/);
     new Script(exported.match(/<script>([\s\S]*?)<\/script>/)[1]);
+    const qrs=JSON.parse(exported.match(/const embeddedBrandQrs=(.*);\n/)[1]);
+    for(const service of brandConfig.customerServices){
+      assert.ok(qrs[service.qrCodePath].startsWith('data:image/jpeg;base64,'));
+      assert.deepEqual(Buffer.from(qrs[service.qrCodePath].split(',')[1],'base64'),await readFile(new URL('../'+service.qrCodePath,import.meta.url)));
+    }
     const embedded=JSON.parse(exported.match(/const embeddedPhotos=(.*);\n/)[1]);
     for(const name of ['light-gray.jpg','light-mint.jpg','bright-blue.jpg']){
       const photo='public/images/felt-mushroom-bag/'+name;
@@ -39,6 +45,12 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     assert.equal(cached.status,304);assert.equal(await cached.text(),'');
     const original=await fetch(new URL(Object.keys(optimizedPhotos)[0],base));
     assert.equal(original.headers.get('cache-control'),'public, max-age=0, must-revalidate');
+    for(const service of brandConfig.customerServices){
+      const response=await fetch(new URL(service.qrCodePath,base));assert.equal(response.status,200);
+      assert.ok(response.headers.get('content-type').startsWith('image/jpeg'));
+      assert.equal(response.headers.get('cache-control'),'public, max-age=0, must-revalidate');
+      const cached=await fetch(new URL(service.qrCodePath,base),{headers:{'If-None-Match':response.headers.get('etag')}});assert.equal(cached.status,304);
+    }
     const missing=await fetch(new URL('public/images/missing.jpg',base));assert.equal(missing.status,404);assert.doesNotMatch(await missing.text(),/<!doctype/i);
     assert.equal((await fetch(new URL('.git/config',base))).status,404);
     assert.equal((await fetch(new URL('.private-originals/felt-mushroom-bag/light-gray.jpg',base))).status,404);

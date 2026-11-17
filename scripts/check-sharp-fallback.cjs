@@ -12,5 +12,10 @@ Module._load=function(request,...rest){
  const layer=await fs.readFile(require('node:path').join(__dirname,'../assets/watermark-text.png'));
  const bytes=await sharp({create:{width:640,height:640,channels:4,background:'#f7f5ef'}}).withIccProfile('srgb').composite([{input:layer,left:10,top:100}]).webp({lossless:true}).toBuffer();
  const info=await sharp(bytes).metadata();if(info.width!==640)throw new Error('Wrong output');
+ const {watermarkSvg}=await import('./watermark-renderer.mjs');
+ const {brandConfig}=await import('../src/brand.js');
+ const svg=await watermarkSvg(500,'#41463d',{...brandConfig,customerServices:[{label:'测试客服',wechatId:'test_service_01',qrCodePath:null}]});
+ const glyphImage=await sharp(svg).png().toBuffer();
+ if(!(await sharp(glyphImage).metadata()).width)throw new Error('Glyph-path SVG not rendered by WASM');
  console.log('PASS official sharp WASM fallback: native modules unavailable; Chinese PNG overlay, ICC, WebP encode/decode work without OS fonts.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

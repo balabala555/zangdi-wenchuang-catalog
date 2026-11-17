@@ -2,18 +2,20 @@ import {readFile,mkdir,writeFile,stat} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {products} from './src/data.js';
+import {brandConfig,validateBrand} from './src/brand.js';
 import {optimizedPhotos} from './src/generated-images.js';
 import {photoPath} from './src/images.js';
 const root=path.dirname(fileURLToPath(import.meta.url));
 // Bundle the known local modules into a standalone preview, without eval.
 export async function buildPreview(){
+  validateBrand();
   const read=file=>readFile(path.join(root,file),'utf8');
-  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/data.js','src/cart.js','src/generated-images.js','src/images.js','src/app.js'].map(read));
+  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/images.js','src/app.js'].map(read));
   const paths=new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).map(photoPath).filter(Boolean));
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
   for(const photo of paths){
-    if(optimizedPhotos[photo]?.watermarkVersion!=='zh-tashi-duck-v1')throw new Error('Missing verified watermarked rendition: '+photo);
+    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-adaptive-v2')throw new Error('Missing verified watermarked rendition: '+photo);
     const rendition=optimizedPhotos[photo].detail.path;
     const bytes=(await stat(path.join(root,rendition))).size;
     if(embeddedBytes+bytes>maxEmbeddedBytes)continue;
@@ -22,7 +24,13 @@ export async function buildPreview(){
     const mime=extension==='jpg' || extension==='jpeg'?'image/jpeg':'image/'+extension;
     embeddedPhotos[photo]='data:'+mime+';base64,'+(await readFile(path.join(root,rendition))).toString('base64');
   }
-  const js='const embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
+  const qrs={};
+  for(const service of brandConfig.customerServices){
+    const file=service.qrCodePath;if(!file)continue;
+    const mime=path.extname(file).slice(1).toLowerCase().replace('jpg','jpeg');
+    qrs[file]='data:image/'+mime+';base64,'+(await readFile(path.join(root,file))).toString('base64');
+  }
+  const js='const embeddedBrandQrs='+JSON.stringify(qrs)+';\nconst embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
   const output=html.replace(/<a id="download-page"[^>]*>[^<]*<\/a>/,'').replace('<link rel="stylesheet" href="./src/style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="./src/app.js"></script>',()=>`<script>\n(()=>{\n${js.replace(/<\/script/gi,'<\\/script')}\n})();\n</script>`);
   await mkdir(path.join(root,'dist'),{recursive:true});
   await writeFile(path.join(root,'dist/index.html'),output);

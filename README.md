@@ -145,3 +145,14 @@ variantImages: {
 Windows 首次安装使用 `npm ci --include=optional`；新增官方 WASM 备用模块，原生 sharp DLL 加载失败时可回退。已有完整带水印输出无需加载 sharp 即可预览。具体水印样式、防叠加机制、私有原图录入方法、Windows 排错和历史原图审计建议见 [图片水印与安全说明](docs/image-watermark-safety.md)。本功能没有收费服务。
 
 原图已在旧 Git 提交及旧离线 HTML 中出现；本轮没有删除文件、清理历史或更改 main。最新图片加水印不能清除旧提交中的无水印照片。只读检查可运行 `npm run audit:images`。
+
+## V2 品牌保护与双客服
+
+统一配置文件为 `src/brand.js`。已设置“扎西德勒鸭”及客服1微信 `15289007429`、客服2微信 `18673575510`；网站显示默认关闭，两位客服二维码已接入。图片水印采用细体、约缩小30%、35%不透明度和−25°倾斜，按局部背景明暗选色，每组“品牌＋一位客服微信”双行交替排布。网页附加低透明度水印，固定联系区和导出清单显示两位客服；不限制浏览、登录或分享。
+
+两张实际客服二维码位于 `public/branding/`，由 `customerServices[].qrCodePath` 对应到各自微信号。当前不展示临时网站地址。网页右下角“微信客服”可打开二维码大图，详情底部也可打开对应客服二维码。二维码原始字节保留，离线 HTML 也携带这两张二维码。更多配置、字体许可与测试范围见 [品牌保护说明](docs/image-watermark-safety.md)。
+
+
+### 实际客服二维码验证
+
+`npm test` 核对二维码文件 SHA-256、图片尺寸和微信号文件名映射。浏览器检查运行 `PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node scripts/check-customer-qr.mjs`，验证网页/离线二维码、联系方式、PNG 及下载，并生成测试截图。可选 `python scripts/check-qr-scan.py /tmp/catalog-qr-check` 使用本地免费开源 Pillow/zxing-cpp 解码这些截图及导出 PNG；工具仅用于开发验证，不是网站运行依赖。
