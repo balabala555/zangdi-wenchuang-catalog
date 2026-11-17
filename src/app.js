@@ -1,4 +1,4 @@
-import {photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
+import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
 import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
 const $=s=>document.querySelector(s);
@@ -9,32 +9,49 @@ function imageMarkup(p, className='', photo=photoPath(p.coverImage) || publicPho
   // Relative, same-site images keep subdirectory deployments working.
   const path=photo.replace(/^\/+/, '');
   if (!/^public\/images\/[a-zA-Z0-9_./-]+\.(png|jpe?g|webp)$/i.test(path) || path.includes('..')) return placeholder;
-  return `<div class="photo-frame ${className}"><img src="${photoUrl(path)}" alt="${escapeHTML(p.name)}" loading="${className?'eager':'lazy'}" decoding="async">${placeholder}</div>`;
+  const size=className==='list-thumbnail' || className==='gallery-thumb'?'thumb':className==='detail-image'?'detail':'card';
+  const srcset=size==='thumb'?'':photoSrcset(path,size);
+  return `<div class="photo-frame ${className}"><img data-fallback="${photoUrl(path,'original')}" src="${photoUrl(path,size)}" ${srcset?`srcset="${srcset}" sizes="${className==='detail-image'?'(max-width:760px) 100vw, 425px':'(max-width:760px) 45vw, 400px'}"`:''} alt="${escapeHTML(p.name)}" loading="${className?'eager':'lazy'}" decoding="async">${placeholder}</div>`;
 }
 // A failed real-image request falls back to a labelled placeholder without a broken icon.
-document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement){e.target.hidden=true;e.target.parentElement.classList.add('image-failed');}},true);
+document.addEventListener('error',e=>{
+  if(!(e.target instanceof HTMLImageElement))return;
+  const img=e.target,fallback=img.dataset.fallback;
+  if(fallback && new URL(fallback,document.baseURI).href!==img.src){
+    delete img.dataset.fallback;img.removeAttribute('srcset');img.src=fallback;return;
+  }
+  img.hidden=true;img.parentElement.classList.add('image-failed');
+},true);
 let cart=[];
 try {cart=sanitizeCart(JSON.parse(localStorage.getItem('shan-cart')||'[]'));} catch {}
-let category=categories[0], query='', selected=null, variant='', quantity=1, photoIndex=0, toastTimer;
+let category=categories[0], query='', selected=null, variant='', quantity=1, photoIndex=0, visibleLimit=24, toastTimer;
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2600);}
 function save(){clearExport();try{localStorage.setItem('shan-cart',JSON.stringify(cart));}catch{toast('浏览器无法保存清单，关闭页面后可能丢失');}updateCount();}
 function updateCount(){$('#bag-count').textContent=cart.reduce((n,i)=>n+i.quantity,0);}
+const moreButton=document.createElement('button');moreButton.id='load-more';moreButton.className='secondary';moreButton.textContent='查看更多好物';moreButton.hidden=true;$('#products').after(moreButton);
+moreButton.addEventListener('click',()=>{visibleLimit+=24;renderProducts();});
 function renderProducts(){
   $('#categories').innerHTML=categories.map(c=>`<button class="${c===category?'active':''}" aria-pressed="${c===category}" data-category="${c}">${c}</button>`).join('');
   const shown=products.filter(p=>(category===categories[0]||p.category===category)&&`${p.name}${p.subtitle}${p.category}`.includes(query));
   $('#results-count').textContent=`共 ${shown.length} 件好物`;
-  $('#empty').hidden=shown.length>0;
-  $('#products').innerHTML=shown.map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${p.name}详情"><div class="product-image">${imageMarkup(p)}<span class="tag">${p.tag}</span></div><div class="product-info"><span class="product-category">${p.category}</span><div class="product-title"><h3>${p.name}</h3><span class="price">¥ ${p.price.toFixed(2)}</span></div><p>${p.subtitle}</p></div></button>`).join('');
+  $('#empty').hidden=shown.length>0;moreButton.hidden=shown.length<=visibleLimit;
+  $('#products').innerHTML=shown.slice(0,visibleLimit).map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${p.name}详情"><div class="product-image">${imageMarkup(p)}<span class="tag">${p.tag}</span></div><div class="product-info"><span class="product-category">${p.category}</span><div class="product-title"><h3>${p.name}</h3><span class="price">¥ ${p.price.toFixed(2)}</span></div><p>${p.subtitle}</p></div></button>`).join('');
 }
-$('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(b){category=b.dataset.category;renderProducts();}});
-$('#search').addEventListener('input',e=>{query=e.target.value.trim();renderProducts();});
+$('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(b){category=b.dataset.category;visibleLimit=24;renderProducts();}});
+$('#search').addEventListener('input',e=>{query=e.target.value.trim();visibleLimit=24;renderProducts();});
 $('#products').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(b)openDetail(b.dataset.product);});
 function openDetail(id){selected=products.find(p=>p.id===id);variant=selected.variants[0];quantity=1;photoIndex=0;renderDetail();$('#detail').showModal();}
 function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div></div></div><div class="detail-actions"><div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div>`;renderGallery();}
+let preloadTimer;
 function renderGallery(){
   const {photos,generic}=productGallery(selected,variant);
   photoIndex=Math.max(0,Math.min(photoIndex,photos.length-1));
-  $('#gallery').innerHTML=`<div class="gallery-stage" tabindex="0" aria-label="商品大图，左右滑动或方向键切换">${imageMarkup(selected,'detail-image',photos[photoIndex] || null)}</div><div class="gallery-caption" aria-live="polite">${escapeHTML(variant)} · ${photos.length ? `${photoIndex+1} / ${photos.length}${generic?' · 通用展示图':''}`:'商品图片待上传'}</div>${photos.length>1?`<div class="gallery-thumbnails" aria-label="选择商品照片">${photos.map((photo,index)=>`<button data-photo="${index}" aria-label="查看第 ${index+1} 张照片" aria-pressed="${index===photoIndex}">${imageMarkup(selected,'',photo)}</button>`).join('')}</div>`:''}`;
+  $('#gallery').innerHTML=`<div class="gallery-stage" tabindex="0" aria-label="商品大图，左右滑动或方向键切换">${imageMarkup(selected,'detail-image',photos[photoIndex] || null)}</div><div class="gallery-caption" aria-live="polite">${escapeHTML(variant)} · ${photos.length ? `${photoIndex+1} / ${photos.length}${generic?' · 通用展示图':''}`:'商品图片待上传'}</div>${photos.length>1?`<div class="gallery-thumbnails" aria-label="选择商品照片">${photos.map((photo,index)=>`<button data-photo="${index}" aria-label="查看第 ${index+1} 张照片" aria-pressed="${index===photoIndex}">${imageMarkup(selected,'gallery-thumb',photo)}</button>`).join('')}</div>`:''}`;
+  clearTimeout(preloadTimer);
+  const nextVariant=selected.variants[(selected.variants.indexOf(variant)+1)%selected.variants.length];
+  const nearby=[photos[photoIndex+1],cartPhoto(selected,nextVariant)].filter(photo=>photo && photo!==photos[photoIndex]);
+  preloadTimer=setTimeout(()=>{if($('#detail').open)preloadPhotos(nearby);},200);
+
 }
 function movePhoto(delta){photoIndex+=delta;renderGallery();}
 let swipeStart=null;
@@ -90,7 +107,7 @@ async function shareExport(){
   try{
     await navigator.share({files:[file],title:'山间来信 · 选购清单'});
   }catch(error){
-    if(error.name!=='AbortError')toast('此浏览器暂时无法分享，请下载或长按下方图片保存');
+    if(error.name!=='AbortError')toast('此浏览器暂时无法分享，请长按下方图片保存到相册');
   }finally{if(button)button.disabled=false;}
 }
 async function exportImage(){
@@ -99,14 +116,17 @@ async function exportImage(){
   const button=$('#export-image');button.disabled=true;button.textContent='正在生成…';
   try{
     const snapshot=JSON.stringify(exportCart);
-    const photos=await Promise.all(exportCart.map(async item=>{
+    if(exportCart.length>95)throw new Error('清单较长，请分批生成图片');
+    const photos=[];
+    for(let offset=0;offset<exportCart.length;offset+=3){
+      photos.push(...await Promise.all(exportCart.slice(offset,offset+3).map(async item=>{
       const p=products.find(p=>p.id===item.id),path=cartPhoto(p,item.variant);
       if(!path)return null;
-      try{return await loadPhoto(path);}catch{throw new Error(p.name+'（'+item.variant+'）照片加载失败，请检查网络后重试');}
-    }));
+      try{return await loadPhoto(path,8000,'thumb');}catch{throw new Error(p.name+'（'+item.variant+'）照片加载失败，请检查网络后重试');}
+      })));
+    }
     await document.fonts.ready;
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    if(exportCart.length>95)throw new Error('清单较长，请分批生成图片');
     const canvas=document.createElement('canvas');canvas.width=900;canvas.height=270+exportCart.length*155+160;const ctx=canvas.getContext('2d');
     ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';ctx.fillText('山间来信 · 选购清单',50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText('LETTERS FROM TIBET / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
     for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
@@ -120,7 +140,7 @@ async function exportImage(){
     if(JSON.stringify(cart)!==snapshot){clearExport();throw new Error('清单已变化，请重新生成图片');}
     const shareable=supportsImageShare(exportFile);
     const result=document.createElement('section');result.id='export-result';
-    result.innerHTML=`<h3>图片清单已生成</h3><p>可分享给微信客服，或长按图片保存到相册。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="山间来信-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
+    result.innerHTML=`<h3>图片清单已生成</h3><p class="save-image-hint"><strong>长按下方图片 → 保存到相册</strong><br>也可点击分享，将完整清单发送给微信客服。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="山间来信-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
     $('#list-dialog .list-content').append(result);
     $('#export-preview').src=exportUrl;$('#download-image').href=exportUrl;
     result.scrollIntoView({block:'start'});
@@ -129,7 +149,7 @@ async function exportImage(){
       if(navigator.userActivation?.isActive)await shareExport();
       else toast('图片已生成，点击分享图片即可发送或保存');
     }else{
-      $('#download-image').click();toast('图片已生成，也可长按下方图片保存');
+      toast('图片已生成，请长按下方图片保存到相册');
     }
   }catch(error){toast(error.message || '图片生成失败，请重试或复制文字清单');}finally{button.disabled=false;button.textContent='分享／保存图片清单';}
 

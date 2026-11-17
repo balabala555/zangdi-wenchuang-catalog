@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import {optimizedPhotos} from '../src/generated-images.js';
 import {createServer} from '../server.js';
 
 for(const basePath of ['/', '/catalog'])test(`preview resources work under ${basePath}`,async()=>{
@@ -31,6 +32,13 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     }
 
     assert.doesNotMatch(exported,/<script[^>]+src=|<link[^>]+stylesheet|^import |id="download-page"/m);
+    const rendition=Object.values(optimizedPhotos)[0].thumb.path;
+    const optimized=await fetch(new URL(rendition,base));assert.equal(optimized.status,200);
+    assert.equal(optimized.headers.get('cache-control'),'public, max-age=31536000, immutable');
+    const cached=await fetch(new URL(rendition,base),{headers:{'If-None-Match':optimized.headers.get('etag')}});
+    assert.equal(cached.status,304);assert.equal(await cached.text(),'');
+    const original=await fetch(new URL(Object.keys(optimizedPhotos)[0],base));
+    assert.equal(original.headers.get('cache-control'),'public, max-age=0, must-revalidate');
     const missing=await fetch(new URL('public/images/missing.jpg',base));assert.equal(missing.status,404);assert.doesNotMatch(await missing.text(),/<!doctype/i);
     assert.equal((await fetch(new URL('.git/config',base))).status,404);
     assert.equal((await fetch(base,{method:'POST'})).status,405);

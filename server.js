@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -25,6 +26,12 @@ export function createServer({basePath='/'}={}){
       if(pathname==='/preview.html')body=body.replace('</footer>','<a id="download-page" href="./download.html" download="zangdi-catalog.html">下载离线网页 ↓</a></footer>');
       const headers={'Content-Type':types[path.extname(pathname)]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache'};
       if(pathname==='/download.html')headers['Content-Disposition']='attachment; filename="zangdi-catalog.html"';
+      if(pathname.startsWith('/public/images/')){
+        const etag='"'+createHash('sha256').update(body).digest('hex')+'"';
+        headers.ETag=etag;
+        headers['Cache-Control']=/^\/public\/images\/optimized\/[a-f0-9]{24}-(thumb|card|detail)\.(webp|jpe?g|png)$/.test(pathname)?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate';
+        if(req.headers['if-none-match']===etag){res.writeHead(304,headers);return res.end();}
+      }
       res.writeHead(200,headers);
       res.end(req.method==='HEAD'?undefined:body);
     }catch{res.writeHead(404);res.end('Not found');}

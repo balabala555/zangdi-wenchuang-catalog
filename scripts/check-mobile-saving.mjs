@@ -1,5 +1,6 @@
 // PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node scripts/check-mobile-saving.mjs
 import assert from 'node:assert/strict';
+import {photoUrl} from '../src/images.js';
 import {createServer} from '../server.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -9,6 +10,7 @@ try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH || '/usr/bin/chromium',args:['--no-sandbox']});
  for(const standalone of [false,true]){
   const page=await browser.newPage({viewport:{width:390,height:667},hasTouch:true});
+  const downloads=[];page.on('download',d=>downloads.push(d));
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>{
    localStorage.setItem('shan-cart',JSON.stringify(['浅灰色','浅薄荷绿','亮蓝色'].map(variant=>({id:'felt-mushroom-bag',variant,quantity:1}))));
@@ -36,6 +38,7 @@ try{
   assert.ok(await page.evaluate(()=>window.shared[0].size>10000 && window.shared[0].type==='image/png'));
   await page.evaluate(()=>window.rejectShare=true);await page.locator('#share-image').click();
   assert.equal(await page.locator('#export-preview').count(),1);assert.equal(await page.locator('#share-image').isEnabled(),true);
+  assert.equal(downloads.length,0,'No automatic download during generation, sharing, or cancellation');
   const dl=page.waitForEvent('download');await page.locator('#download-image').click();assert.equal(await (await dl).failure(),null);
   // A changed cart must remove the stale exported image.
   await page.locator('[data-change="1"]').first().click();assert.equal(await page.locator('#export-preview').count(),0);
@@ -44,11 +47,19 @@ try{
  }
  const page=await browser.newPage({viewport:{width:390,height:667}});
  await page.addInitScript(()=>localStorage.setItem('shan-cart',JSON.stringify([{id:'felt-mushroom-bag',variant:'亮蓝色',quantity:1}])));
- await page.route('**/bright-blue.jpg',route=>route.fulfill({status:404,body:'missing'}));
+ await page.route('**/'+photoUrl('public/images/felt-mushroom-bag/bright-blue.jpg','thumb').slice(2),route=>route.fulfill({status:404,body:'missing'}));
+ await page.route('**/public/images/felt-mushroom-bag/bright-blue.jpg',route=>route.fulfill({status:404,body:'missing'}));
  await page.goto(origin);await page.locator('#open-list').click();await page.locator('#export-image').click();
  await page.getByText('羊毛毡立体蘑菇手提包（亮蓝色）照片加载失败，请检查网络后重试',{exact:true}).waitFor();
  assert.equal(await page.locator('#export-preview').count(),0);
  assert.equal(await page.locator('#export-image').isEnabled(),true);
  console.log('PASS missing real photo: export blocked with exact variant error rather than a silently incomplete PNG');
+ await page.unroute('**/public/images/felt-mushroom-bag/bright-blue.jpg');
+ await page.unroute('**/'+photoUrl('public/images/felt-mushroom-bag/bright-blue.jpg','thumb').slice(2));
+ let automaticDownloads=0;page.on('download',()=>automaticDownloads++);
+ await page.locator('#export-image').click();await page.locator('#export-preview').waitFor();
+ assert.equal(automaticDownloads,0);assert.equal(await page.locator('#share-image').count(),0);
+ assert.match(await page.locator('.save-image-hint').textContent(),/长按下方图片/);
+ console.log('PASS no native share: no automatic download; prominent long-press image remains available');
  await page.close();
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

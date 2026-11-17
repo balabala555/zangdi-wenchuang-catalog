@@ -58,3 +58,7 @@ dialog{max-height:90vh;max-height:90dvh;overscroll-behavior:contain;-webkit-over
  .list-item>.price{font-size:12px}
  .gallery-stage{touch-action:pan-y}
 }
+
+#export-result .save-image-hint{padding:14px;background:#eeeee5;border:1px solid var(--line);color:var(--ink);font-size:13px;line-height:1.9}
+
+#load-more{display:block;margin:24px auto 0}

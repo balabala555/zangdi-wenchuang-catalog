@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {photoPath,publicPhotos,productGallery,cartPhoto,drawPhoto,loadPhoto} from '../src/images.js';
+import {photoPath,publicPhotos,productGallery,cartPhoto,drawPhoto,loadPhoto,clearPhotoCache,preloadPhotos} from '../src/images.js';
 const common='public/images/p01/common.webp',red='public/images/p01/red.jpg',green='public/images/p01/green.png';
 const p={image:null,images:[common,common],variants:['赭红','松绿','暖金'],variantImages:{赭红:[red],松绿:[green]}};
 test('gallery keeps variant photos first, appends shared photos and never borrows other variants',()=>{
@@ -32,20 +32,40 @@ test('PNG photo drawing preserves proportions and centers the actual selected im
  assert.deepEqual(calls,[[image,50,240,100,50]]);
 });
 test('photo loader completes on success and rejects failed or stalled photos',async()=>{
- const old=globalThis.Image;
+ clearPhotoCache();const old=globalThis.Image;
  try{
   globalThis.Image=class{set src(value){this.url=value;queueMicrotask(()=>this.onload?.());}};
   assert.equal((await loadPhoto(red)).url,'./'+red);
-  globalThis.Image=class{set src(value){queueMicrotask(()=>this.onerror?.());}};
+  clearPhotoCache();globalThis.Image=class{set src(value){queueMicrotask(()=>this.onerror?.());}};
   await assert.rejects(loadPhoto(red),/unavailable/);
-  globalThis.Image=class{set src(value){}};
+  clearPhotoCache();globalThis.Image=class{set src(value){}};
   await assert.rejects(loadPhoto(red,5),/timeout/);
  }finally{globalThis.Image=old;}
 });
 test('photo loader rejects decode failures instead of exporting a blank image',async()=>{
- const old=globalThis.Image;
+ clearPhotoCache();const old=globalThis.Image;
  try{
   globalThis.Image=class{decode(){return Promise.reject(new Error('Decode failed'));}set src(value){queueMicrotask(()=>this.onload?.());}};
   await assert.rejects(loadPhoto(red),/Decode failed/);
  }finally{globalThis.Image=old;}
+});
+test('decoded cache deduplicates concurrent loads, retries failures and evicts old images',async()=>{
+ clearPhotoCache();const old=globalThis.Image;let count=0;
+ try{
+  globalThis.Image=class{naturalWidth=100;naturalHeight=100;set src(value){count++;queueMicrotask(()=>this.onload?.());}};
+  const [a,b]=await Promise.all([loadPhoto(red),loadPhoto(red)]);assert.equal(a,b);assert.equal(count,1);
+  for(let i=0;i<10;i++)await loadPhoto(`public/images/cache-${i}.jpg`);
+  await loadPhoto(red);assert.equal(count,12);
+  clearPhotoCache();let failing=true;
+  globalThis.Image=class{set src(value){count++;queueMicrotask(()=>failing?this.onerror?.():this.onload?.());}};
+  await assert.rejects(loadPhoto(red));failing=false;await loadPhoto(red);
+ }finally{clearPhotoCache();globalThis.Image=old;}
+});
+test('preloading is limited to two distinct photos and disabled for data saver or 2g',async()=>{
+ clearPhotoCache();const old=globalThis.Image;let count=0;
+ try{
+  globalThis.Image=class{set src(value){count++;queueMicrotask(()=>this.onload?.());}};
+  await preloadPhotos([red,green],{saveData:true});await preloadPhotos([red,green],{effectiveType:'2g'});assert.equal(count,0);
+  await preloadPhotos([red,red,green,common],{});assert.equal(count,2);
+ }finally{clearPhotoCache();globalThis.Image=old;}
 });

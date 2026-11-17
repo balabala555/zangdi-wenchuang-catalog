@@ -42,7 +42,8 @@ try{
  assert.match(await page.locator('.list-item').nth(0).locator('img').getAttribute('src'),/red.png$/);
  assert.match(await page.locator('.list-item').nth(1).locator('img').getAttribute('src'),/green.png$/);
  assert.match(await page.locator('.list-total').textContent(),/272/);
- const downloadPromise=page.waitForEvent('download');await page.locator('#export-image').click();
+ await page.locator('#export-image').click();await page.locator('#export-preview').waitFor();
+ const downloadPromise=page.waitForEvent('download');await page.locator('#download-image').click();
  const download=await downloadPromise;assert.match(download.suggestedFilename(),/\.png$/);assert.equal(await download.failure(),null);
  const drawn=await page.evaluate(()=>window.drawnPhotos);assert.ok(drawn.some(p=>p.endsWith('/red.png')));assert.ok(drawn.some(p=>p.endsWith('/green.png')));
  await page.locator('#list-dialog [data-close]').click();
