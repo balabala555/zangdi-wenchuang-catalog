@@ -156,3 +156,8 @@ Windows 首次安装使用 `npm ci --include=optional`；新增官方 WASM 备�
 ### 实际客服二维码验证
 
 `npm test` 核对二维码文件 SHA-256、图片尺寸和微信号文件名映射。浏览器检查运行 `PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node scripts/check-customer-qr.mjs`，验证网页/离线二维码、联系方式、PNG 及下载，并生成测试截图。可选 `python scripts/check-qr-scan.py /tmp/catalog-qr-check` 使用本地免费开源 Pillow/zxing-cpp 解码这些截图及导出 PNG；工具仅用于开发验证，不是网站运行依赖。
+
+
+## V3 商品图水印（最新）
+
+图片水印现为 **60% 不透明度＋Medium 中等字重＋轻微黑白反差描边**，保留−25°、双行和双客服交替分布。根据原图局部明暗选择纯黑/纯白；所有尺寸从私有原图重建，不叠加旧水印。网页水印、二维码、商品资料与选购/保存功能不变，网站地址仍隐藏。配置入口仍为 `src/brand.js`，详情见 [品牌保护说明](docs/image-watermark-safety.md)。

@@ -17,7 +17,7 @@ test('watermarked renditions match manifests, are bounded and match correct publ
    assert.equal(hash(bytes),entry[size].sha256);assert.equal(bytes.length,entry[size].bytes);
    const metadata=await sharp(bytes).metadata();assert.ok(metadata.width<=max && metadata.height<=max);
    if(size!=='detail')assert.equal(metadata.isProgressive,false);
-   assert.equal(entry.watermarkVersion,'merchant-adaptive-v2');
+   assert.equal(entry.watermarkVersion,'merchant-adaptive-v3');
   }
   // The compatibility fallback and current detail rendition carry the same watermark.
   const detail=await readFile(new URL('../'+entry.detail.path,import.meta.url));

@@ -7,7 +7,7 @@ export const brandConfig = {
   ],
   websiteUrl: '',
   showWebsiteUrl: false,
-  imageWatermark: {opacity: 0.35, fontScale: 0.7, angle: -25, adaptiveColor: true, lightColor: '#f3f0e8', darkColor: '#41463d'},
+  imageWatermark: {opacity: 0.6, fontScale: 0.7, angle: -25, adaptiveColor: true, lightColor: '#ffffff', darkColor: '#000000', fontAssetPath: 'assets/fonts/NotoSansCJKsc-Medium.woff2', outlineRatio: 0.018, minOutlinePx: 0.35},
   pageWatermark: {opacity: 0.065, fontSize: 15, angle: -25, color: '#69735c'},
 };
 export function validateBrand(config=brandConfig){
@@ -23,6 +23,8 @@ export function validateBrand(config=brandConfig){
   if(config.showWebsiteUrl && !config.websiteUrl)throw new Error('A visible website needs a configured URL');
   for(const params of [config.imageWatermark,config.pageWatermark])if(!Number.isFinite(params.opacity) || params.opacity<0 || params.opacity>1 || !Number.isFinite(params.angle) || Math.abs(params.angle)>60)throw new Error('Invalid watermark parameters');
   if(!(config.imageWatermark.fontScale>=0.2 && config.imageWatermark.fontScale<=2) || !(config.pageWatermark.fontSize>=8 && config.pageWatermark.fontSize<=30))throw new Error('Invalid watermark font size');
+  if(!/^assets\/fonts\/[a-zA-Z0-9_.-]+\.woff2$/.test(config.imageWatermark.fontAssetPath || ''))throw new Error('Invalid local watermark font');
+  if(!(config.imageWatermark.outlineRatio>=0 && config.imageWatermark.outlineRatio<=0.05) || !(config.imageWatermark.minOutlinePx>=0 && config.imageWatermark.minOutlinePx<=1))throw new Error('Invalid watermark outline');
   for(const color of [config.imageWatermark.lightColor,config.imageWatermark.darkColor,config.pageWatermark.color])if(!/^#[a-f0-9]{6}$/i.test(color))throw new Error('Invalid watermark color');
   return config;
 }

@@ -10,11 +10,11 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const manifestFile=path.join(root,'src/generated-images.js');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const settings={thumb:240,card:640,detail:1600};
-export const watermarkVersion='merchant-adaptive-v2';
+export const watermarkVersion='merchant-adaptive-v3';
 validateBrand();
-const fontHash=hash(await readFile(path.join(root,'assets/fonts/NotoSansCJKsc-Light.woff2')));
+const fontHash=hash(await readFile(path.join(root,brandConfig.imageWatermark.fontAssetPath)));
 const legacyFiles=JSON.parse(await readFile(path.join(root,'scripts/legacy-public-images.json'),'utf8'));
-const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,fontHash,brand:{name:brandConfig.name,contacts:brandConfig.customerServices.map(service=>service.wechatId),watermark:brandConfig.imageWatermark},encoding:'lossless-webp-or-jpeg94-srgb',layout:'3-interior-lines-v2'});
+const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,fontHash,brand:{name:brandConfig.name,contacts:brandConfig.customerServices.map(service=>service.wechatId),watermark:brandConfig.imageWatermark},encoding:'lossless-webp-or-jpeg94-srgb',layout:'3-interior-lines-v3-compact-outlined'});
 const sources=[...new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).filter(Boolean))].sort();
 let previous={};
 try{previous=JSON.parse((await readFile(manifestFile,'utf8')).split('export const optimizedPhotos = ')[1].trim().replace(/;$/,''));}catch{}
