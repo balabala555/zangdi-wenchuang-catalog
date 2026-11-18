@@ -21,3 +21,8 @@ for number,payload in expected.items():
 for mode in ['web','offline']:
  assert decoded(output/(mode+'-cart.png'))==set(expected.values()),mode+' exported PNG missing/wrong QR'
 print('PASS: both originals, four browser-rendered QR images and both exported PNG lists decode to the same expected WeChat links; no online profile lookup performed.')
+
+# Full-size branded product files must preserve both actual contact codes too.
+for photo in (root/'public/images/felt-mushroom-bag').glob('*.jpg'):
+ assert decoded(photo)==set(expected.values()),'Product signature QR missing/wrong: '+photo.name
+print('PASS: both actual QR codes decode from all three full-size branded product photos.')

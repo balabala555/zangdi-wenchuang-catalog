@@ -1,7 +1,7 @@
 import {create} from 'fontkit';
 import {readFile} from 'node:fs/promises';
 import {brandConfig,validateBrand,mountainGeometry} from '../src/brand.js';
-export function adaptiveInk(luminance,config=brandConfig){return config.imageWatermark.adaptiveColor && luminance<0.5?config.imageWatermark.lightColor:config.imageWatermark.darkColor;}
+export function adaptiveInk(luminance,config=brandConfig){return config.imageWatermark.adaptiveColor && luminance<config.imageWatermark.adaptiveThreshold?config.imageWatermark.lightColor:config.imageWatermark.darkColor;}
 export function visualInk(luminance,config=brandConfig){return luminance<0.5?config.brandVisual.lightColor:config.brandVisual.darkColor;}
 const xml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 const fonts=new Map();
@@ -45,17 +45,35 @@ export async function brandMarkSvg(width,color,config=brandConfig){
   const name=fitGlyphs(face,config.name,width*params.nameSizeRatio,config.brandVisual.letterSpacing,width*0.94);
   const english=fitGlyphs(face,config.englishName,width*params.englishSizeRatio,config.brandVisual.letterSpacing*1.7,width*0.88);
   const subtitle=fitGlyphs(face,config.subtitle,width*params.subtitleSizeRatio,config.brandVisual.letterSpacing*0.6,width*0.68);
-  const body=`<g color="${xml(color)}" fill="${xml(color)}" stroke="${contrastOutline(color)}" stroke-width="${Math.max(0.25,width*0.0012)}" paint-order="stroke fill" stroke-linejoin="round" opacity="${params.opacity}">${mountain(width*0.6,width/2,0,config)}${centered(name,width/2,width*0.33)}${centered(english,width/2,width*0.415)}${centered(subtitle,width/2,width*0.515)}<path d="M${width*0.04} ${width*0.495}H${width*0.14} M${width*0.86} ${width*0.495}H${width*0.96}" stroke="${xml(color)}" stroke-width="${width*0.0015}" fill="none"/></g>`;
-  return svg(width,width*0.56,body,[config.name,config.englishName,config.subtitle].join(' | '));
+  const body=`<g color="${xml(color)}" fill="${xml(color)}" stroke="${contrastOutline(color)}" stroke-width="${Math.max(0.25,width*0.0012)}" paint-order="stroke fill" stroke-linejoin="round" opacity="${params.opacity}">${mountain(width*0.6,width/2,0,config)}${centered(name,width/2,width*0.33)}${centered(english,width/2,width*0.425)}${centered(subtitle,width/2,width*0.55)}<path d="M${width*0.17} ${width*0.48}H${width*0.83}" stroke="${xml(color)}" stroke-width="${width*0.0015}" fill="none"/></g>`;
+  return svg(width,width*0.60,body,[config.name,config.englishName,config.subtitle].join(' | '));
 }
 export async function signatureSvg(width,height,config=brandConfig){
   validateBrand(config);const face=await getFont(config.brandVisual.fontAssetPath),params=config.brandVisual.footer;
-  const name=glyphs(face,config.name+' · '+config.englishName,width*0.014,config.brandVisual.letterSpacing*0.3);
-  const contacts=config.customerServices.map(service=>fitGlyphs(face,service.label+'微信：'+service.wechatId,width*params.fontSizeRatio,params.letterSpacing,width*0.44));
-  const ruleY=height*0.25,mountainW=Math.min(width*0.14,height*1.3);
-  let body=`<rect width="${width}" height="${height}" fill="${params.background}"/><g color="${params.color}" fill="${params.color}" opacity="${params.opacity}"><path d="M${width*0.04} ${ruleY}H${width*0.40} M${width*0.60} ${ruleY}H${width*0.96}" fill="none" stroke="${params.color}" stroke-width="${Math.max(0.25,width*params.lineWidthRatio)}"/>${mountain(mountainW,width/2,0,config)}${centered(name,width/2,height*0.58)}`;
-  contacts.forEach((line,index)=>{body+=centered(line,width*(config.customerServices.length===1?0.5:index===0?0.26:0.74),height*0.87);});
-  if(contacts.length>1)body+=`<path d="M${width/2} ${height*0.70}V${height*0.94}" stroke="${params.color}" stroke-width="${Math.max(0.25,width*params.lineWidthRatio)}"/>`;
-  body+='</g>';
-  return svg(width,height,body,[config.name,config.englishName,...config.customerServices.map(service=>service.wechatId)].join(' | '));
+  const name=fitGlyphs(face,config.name,width*params.nameSizeRatio,config.brandVisual.letterSpacing,width*0.32);
+  const english=fitGlyphs(face,config.englishName,width*params.englishSizeRatio,0.35,width*0.32);
+  const subtitle=fitGlyphs(face,config.subtitle,width*params.subtitleSizeRatio,0.2,width*0.30);
+  const contacts=config.customerServices.map(service=>fitGlyphs(face,service.label+'微信：'+service.wechatId,width*params.fontSizeRatio,params.letterSpacing,width*0.29));
+  // Paper band is appended outside the original photo; no color grading or product redraw.
+  let body=`<rect width="${width}" height="${height}" fill="${params.background}"/><g color="${params.color}" fill="${params.color}" opacity="${params.opacity}">
+    <path d="M${width*0.21} ${height*0.13}Q${width*0.29} ${-height*0.04} ${width*0.38} ${height*0.10}T${width*0.60} ${height*0.09}T${width*0.80} ${height*0.12}" fill="none" stroke="${params.color}" stroke-opacity="0.12" stroke-width="${width*0.003}"/>
+    ${mountain(width*0.13,width*0.37,height*0.09,config)}${centered(name,width*0.37,height*0.43)}${centered(english,width*0.37,height*0.54)}
+    <path d="M${width*0.54} ${height*0.24}V${height*0.50}" fill="none" stroke="${params.color}" stroke-width="${width*params.lineWidthRatio}"/>
+    ${centered(subtitle,width*0.70,height*0.43)}`;
+  contacts.forEach((line,index)=>{
+    const x=width*(contacts.length===1?0.5:index===0?0.355:0.675);
+    body+=`<rect x="${x-width*0.153}" y="${height*0.65}" width="${width*0.306}" height="${height*0.24}" rx="${width*0.006}" fill="none" stroke="${params.color}" stroke-opacity="0.3" stroke-width="${Math.max(0.3,width*params.lineWidthRatio)}"/>`+centered(line,x,height*0.81);
+  });body+='</g>';
+  if(params.showQrCodes){
+    for(const [index,service] of config.customerServices.entries()){
+      if(!service.qrCodePath)continue;
+      // Embed uploaded bytes verbatim, including the entire original margin/header. Never redraw a QR.
+      const bytes=await readFile(new URL('../'+service.qrCodePath,import.meta.url));
+      const mime=/\.png$/i.test(service.qrCodePath)?'image/png':/\.webp$/i.test(service.qrCodePath)?'image/webp':'image/jpeg';
+      const qrW=width*params.qrWidthRatio,qrH=height*0.82;
+      const x=index===0?width*0.025:width*0.825;
+      body+=`<image x="${x}" y="${height*0.09}" width="${qrW}" height="${qrH}" preserveAspectRatio="xMidYMid meet" href="data:${mime};base64,${bytes.toString('base64')}"/>`;
+    }
+  }
+  return svg(width,height,body,[config.name,config.englishName,config.subtitle,...config.customerServices.map(service=>service.wechatId)].join(' | '));
 }

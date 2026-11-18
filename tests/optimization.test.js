@@ -15,6 +15,7 @@ test('watermarked renditions match manifests, are bounded and match correct publ
   const recipe=JSON.parse(entry.recipe);
   assert.equal(recipe.brand.name,brandConfig.name);assert.equal(recipe.brand.englishName,brandConfig.englishName);assert.equal(recipe.brand.subtitle,brandConfig.subtitle);
   assert.deepEqual(recipe.brand.contacts,brandConfig.customerServices.map(service=>service.wechatId));
+  for(const [index,service] of brandConfig.customerServices.entries()){assert.equal(recipe.qrHashes[index].id,service.wechatId);assert.equal(recipe.qrHashes[index].path,service.qrCodePath);assert.equal(recipe.qrHashes[index].hash,hash(await readFile(service.qrCodePath)));}
   const original=await readFile(new URL('../'+source,import.meta.url));originalTotal+=original.length;
   for(const [size,max] of [['thumb',240],['card',640],['detail',1600]]){
    const bytes=await readFile(new URL('../'+entry[size].path,import.meta.url));
@@ -24,7 +25,7 @@ test('watermarked renditions match manifests, are bounded and match correct publ
    assert.equal(entry[size].height,entry[size].photoHeight+entry[size].footerHeight);
    assert.equal(entry[size].width,entry[size].photoWidth);
    if(size!=='detail')assert.equal(metadata.isProgressive,false);
-   assert.equal(entry.watermarkVersion,'merchant-three-layer-v4');
+   assert.equal(entry.watermarkVersion,'merchant-reference-v3-template-v5');
   }
   // The compatibility fallback and current detail rendition carry the same watermark.
   const detail=await readFile(new URL('../'+entry.detail.path,import.meta.url));

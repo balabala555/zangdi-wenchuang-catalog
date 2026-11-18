@@ -84,3 +84,17 @@ test('three-layer text comes from exact configuration, with serif artwork and no
  for(const artwork of [logo,footer]){assert.doesNotMatch(artwork,/<text/);assert.ok(artwork.includes('<polyline'));assert.ok(!artwork.includes(String.fromCharCode(0x00ae)));}
  assert.throws(()=>validateBrand({...brandConfig,name:brandConfig.name+String.fromCharCode(0x00ae)}));
 });
+
+test('reference template embeds only the two unchanged uploaded QR images and invalidates QR edits',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const svg=(await signatureSvg(1100,264)).toString();
+ assert.equal((svg.match(/<image /g)||[]).length,2);
+ for(const service of brandConfig.customerServices){
+  const original=await readFile(service.qrCodePath);
+  assert.ok(svg.includes(original.toString('base64')),'QR must embed exact original bytes');
+ }
+ assert.equal((svg.match(/preserveAspectRatio="xMidYMid meet"/g)||[]).length,2);
+ assert.ok(svg.includes(brandConfig.subtitle));
+ const hidden=structuredClone(brandConfig);hidden.brandVisual.footer.showQrCodes=false;
+ assert.ok(!(await signatureSvg(1100,264,hidden)).toString().includes('<image '));
+});

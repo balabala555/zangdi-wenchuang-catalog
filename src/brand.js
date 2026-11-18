@@ -10,12 +10,12 @@ export const brandConfig = {
   ],
   websiteUrl: '',
   showWebsiteUrl: false,
-  imageWatermark: {opacity: 0.6, fontScale: 0.3, angle: -25, adaptiveColor: true, lightColor: '#ffffff', darkColor: '#000000', fontAssetPath: 'assets/fonts/NotoSansCJKsc-Medium.woff2', outlineRatio: 0.01, minOutlinePx: 0.22, letterSpacing: 0.025, contactSizeRatio: 0.72, maxWidthRatio: 0.29, maxHeightRatio: 0.13, positions: [[0.04,0.20],[0.39,0.20],[0.72,0.20],[0.18,0.35],[0.57,0.35],[0.04,0.50],[0.39,0.50],[0.72,0.50]]},
+  imageWatermark: {opacity: 0.6, fontScale: 0.3, angle: -25, adaptiveColor: true, adaptiveThreshold: 0.65, lightColor: '#f2e6c5', darkColor: '#656557', fontAssetPath: 'assets/fonts/NotoSansCJKsc-Medium.woff2', outlineRatio: 0.01, minOutlinePx: 0.22, letterSpacing: 0.025, contactSizeRatio: 0.72, maxWidthRatio: 0.22, maxHeightRatio: 0.13, positions: [[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]},
   brandVisual: {
     fontAssetPath: 'assets/fonts/NotoSerifCJKsc-Regular.woff2',
     lightColor: '#f2e6c5', darkColor: '#42483e', letterSpacing: 0.12,
-    mark: {widthRatio: 0.30, leftRatio: 0.035, topRatio: 0.018, maxHeightRatio: 0.18, opacity: 0.9, nameSizeRatio: 0.16, englishSizeRatio: 0.048, subtitleSizeRatio: 0.05},
-    footer: {heightRatio: 0.09, minHeightWidthRatio: 0.12, background: '#f7f5ef', color: '#596050', opacity: 1, fontSizeRatio: 0.023, letterSpacing: 0.035, lineWidthRatio: 0.001},
+    mark: {widthRatio: 0.30, leftRatio: 0.035, topRatio: 0.075, maxHeightRatio: 0.18, opacity: 0.95, nameSizeRatio: 0.16, englishSizeRatio: 0.055, subtitleSizeRatio: 0.065},
+    footer: {heightRatio: 0.18, minHeightWidthRatio: 0.24, background: '#f7f3e9', color: '#48483e', opacity: 1, fontSizeRatio: 0.022, letterSpacing: 0.035, lineWidthRatio: 0.001, showQrCodes: true, qrWidthRatio: 0.15, nameSizeRatio: 0.04, subtitleSizeRatio: 0.018, englishSizeRatio: 0.012},
     mountain: {width: 214, height: 64, strokeWidth: 1.8, paths: [
       [[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],
       [[38,30],[55,50],[78,32]], [[96,2],[115,33],[98,25],[88,33]], [[172,30],[190,50]],
@@ -49,10 +49,13 @@ export function validateBrand(config=brandConfig){
   const range=(value,min,max)=>Number.isFinite(value) && value>=min && value<=max;
   if(!range(visual.letterSpacing,0,0.5) || !range(visual.mark.opacity,0,1) || !range(visual.mark.widthRatio,0.15,0.4) || !range(visual.mark.leftRatio,0,0.2) || !range(visual.mark.topRatio,0,0.1) || !range(visual.mark.maxHeightRatio,0.1,0.25))throw new Error('Invalid brand mark layout');
   for(const key of ['nameSizeRatio','englishSizeRatio','subtitleSizeRatio'])if(!range(visual.mark[key],0.02,0.2))throw new Error('Invalid brand mark font size');
-  if(!range(visual.footer.heightRatio,0.06,0.16) || !range(visual.footer.minHeightWidthRatio,0.1,0.2) || !range(visual.footer.opacity,0,1) || !range(visual.footer.fontSizeRatio,0.012,0.035) || !range(visual.footer.letterSpacing,0,0.5) || !range(visual.footer.lineWidthRatio,0.0005,0.004))throw new Error('Invalid brand signature layout');
+  if(!range(visual.footer.heightRatio,0.06,0.24) || !range(visual.footer.minHeightWidthRatio,0.1,0.32) || !range(visual.footer.opacity,0,1) || !range(visual.footer.fontSizeRatio,0.012,0.035) || !range(visual.footer.letterSpacing,0,0.5) || !range(visual.footer.lineWidthRatio,0.0005,0.004))throw new Error('Invalid brand signature layout');
+  if(typeof visual.footer.showQrCodes!=='boolean' || !range(visual.footer.qrWidthRatio,0.12,0.18))throw new Error('Invalid signature QR layout');
+  for(const key of ['nameSizeRatio','subtitleSizeRatio','englishSizeRatio'])if(!range(visual.footer[key],0.008,0.06))throw new Error('Invalid signature font size');
+  if(!range(config.imageWatermark.adaptiveThreshold,0.2,0.8))throw new Error('Invalid adaptive luminance threshold');
   const protection=config.imageWatermark;
   if(!range(protection.letterSpacing,0,0.3) || !range(protection.contactSizeRatio,0.5,0.9) || !range(protection.maxWidthRatio,0.15,0.4) || !range(protection.maxHeightRatio,0.08,0.2))throw new Error('Invalid protection text layout');
-  if(!Array.isArray(protection.positions) || protection.positions.length<2 || protection.positions.length>12 || protection.positions.some(point=>!Array.isArray(point) || point.length!==2 || !range(point[0],0,0.9) || !range(point[1],0.15,0.55)))throw new Error('Invalid distributed positions');
+  if(!Array.isArray(protection.positions) || protection.positions.length<2 || protection.positions.length>12 || protection.positions.some(point=>!Array.isArray(point) || point.length!==2 || !range(point[0],0,0.9) || !range(point[1],0.15,0.58)))throw new Error('Invalid distributed positions');
   const mountain=visual.mountain;
   if(!range(mountain.width,50,500) || !range(mountain.height,20,200) || !range(mountain.strokeWidth,0.5,4) || !Array.isArray(mountain.paths) || mountain.paths.length>10 || mountain.paths.some(line=>!Array.isArray(line) || line.length<2 || line.length>20 || line.some(point=>!Array.isArray(point) || point.length!==2 || !range(point[0],0,mountain.width) || !range(point[1],0,mountain.height))))throw new Error('Invalid mountain artwork');
   return config;

@@ -10,13 +10,14 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const manifestFile=path.join(root,'src/generated-images.js');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const settings={thumb:240,card:640,detail:1600};
-export const watermarkVersion='merchant-three-layer-v4';
+export const watermarkVersion='merchant-reference-v3-template-v5';
 validateBrand();
 const fontHash=hash(Buffer.concat(await Promise.all([brandConfig.imageWatermark.fontAssetPath,brandConfig.brandVisual.fontAssetPath].map(file=>readFile(path.join(root,file))))));
 const rendererHash=hash(await readFile(path.join(root,'scripts/watermark-renderer.mjs')));
 const pipelineHash=hash(await readFile(fileURLToPath(import.meta.url)));
 const legacyFiles=JSON.parse(await readFile(path.join(root,'scripts/legacy-public-images.json'),'utf8'));
-const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,fontHash,rendererHash,pipelineHash,brand:{name:brandConfig.name,englishName:brandConfig.englishName,subtitle:brandConfig.subtitle,visual:brandConfig.brandVisual,contacts:brandConfig.customerServices.map(service=>service.wechatId),watermark:brandConfig.imageWatermark},encoding:'lossless-webp-or-jpeg94-srgb',layout:'three-layers-photo-preserved-footer-v4'});
+const qrHashes=await Promise.all(brandConfig.customerServices.map(async service=>({id:service.wechatId,path:service.qrCodePath,hash:service.qrCodePath?hash(await readFile(path.join(root,service.qrCodePath))):null})));
+const recipe=JSON.stringify({legacy:hash(Buffer.from(JSON.stringify(legacyFiles))),settings,watermarkVersion,qrHashes,fontHash,rendererHash,pipelineHash,brand:{name:brandConfig.name,englishName:brandConfig.englishName,subtitle:brandConfig.subtitle,visual:brandConfig.brandVisual,contacts:brandConfig.customerServices.map(service=>service.wechatId),watermark:brandConfig.imageWatermark},encoding:'lossless-webp-or-jpeg94-srgb',layout:'three-layers-authentic-qr-footer-v5'});
 const sources=[...new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).filter(Boolean))].sort();
 let previous={};
 try{previous=JSON.parse((await readFile(manifestFile,'utf8')).split('export const optimizedPhotos = ')[1].trim().replace(/;$/,''));}catch{}
@@ -60,9 +61,9 @@ for(const source of sources){
     for(let i=0;i<sample.data.length;i+=sample.info.channels)sum+=sample.data[i]*0.2126+sample.data[i+1]*0.7152+sample.data[i+2]*0.0722;
     return sum/(sample.info.width*sample.info.height*255);
   }
-  const mark=brandConfig.brandVisual.mark,markW=Math.max(1,Math.round(Math.min(w*mark.widthRatio,h*mark.maxHeightRatio/0.56)));
+  const mark=brandConfig.brandVisual.mark,markW=Math.max(1,Math.round(Math.min(w*mark.widthRatio,h*mark.maxHeightRatio/0.60)));
   const markLeft=Math.round(w*mark.leftRatio),markTop=Math.round(h*mark.topRatio);
-  const markInk=visualInk(await brightness(markLeft,markTop,markW,markW*0.56));
+  const markInk=visualInk(await brightness(markLeft,markTop,markW,markW*0.60));
   const logo=await sharp(await brandMarkSvg(markW,markInk)).png().toBuffer({resolveWithObject:true});
   overlays.push({input:logo.data,left:Math.min(markLeft,w-logo.info.width),top:Math.min(markTop,h-logo.info.height)});
   const protection=brandConfig.imageWatermark;
