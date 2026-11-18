@@ -9,7 +9,7 @@ try{
  const page=await browser.newPage({viewport:{width:390,height:667},hasTouch:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/src/brand.js',async route=>{
-  const response=await route.fetch();await route.fulfill({response,body:(await response.text())+`\nbrandConfig.customerServices=[{label:'客服1',wechatId:'test_service_01',qrCodePath:'public/branding/test-qr1.png'},{label:'客服2',wechatId:'test_service_02',qrCodePath:'public/branding/test-qr2.png'}];brandConfig.websiteUrl='https://example.test/catalog';brandConfig.showWebsiteUrl=true;`});
+  const response=await route.fetch();await route.fulfill({response,body:(await response.text())+`\nbrandConfig.assets.enabled=false;brandConfig.customerServices=[{label:'客服1',wechatId:'test_service_01',qrCodePath:'public/branding/test-qr1.png'},{label:'客服2',wechatId:'test_service_02',qrCodePath:'public/branding/test-qr2.png'}];brandConfig.websiteUrl='https://example.test/catalog';brandConfig.showWebsiteUrl=true;`});
  });
  await page.route('**/public/branding/test-qr*.png',route=>route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1sAAAAASUVORK5CYII=','base64')}));
  await page.addInitScript(()=>{

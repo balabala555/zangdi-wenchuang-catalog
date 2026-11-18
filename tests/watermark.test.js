@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import {brandConfig} from '../src/brand.js';
+import {signatureSvg} from '../scripts/watermark-renderer.mjs';
 import {optimizedPhotos} from '../src/generated-images.js';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 test('watermarks are baked into all sizes; private originals remain untouched',async t=>{
@@ -38,7 +39,11 @@ test('watermarks are baked into all sizes; private originals remain untouched',a
    const sourceInfo=await sharp(original).rotate().metadata();
    assert.ok(Math.abs(composition.photoWidth/composition.photoHeight-sourceInfo.width/sourceInfo.height)<0.006,'Original subject aspect ratio must be preserved');
    const corner=await sharp(await readFile(entry[size].path)).extract({left:0,top:composition.photoHeight,width:1,height:1}).removeAlpha().raw().toBuffer();
-   assert.deepEqual([...corner],[1,3,5].map(index=>parseInt(brandConfig.brandVisual.footer.background.slice(index,index+2),16)),'Signature must be outside the photo on the configured paper background');
+   if(brandConfig.assets?.enabled){
+    const footer=await sharp(await readFile(entry[size].path)).extract({left:0,top:composition.photoHeight,width:composition.photoWidth,height:composition.footerHeight}).removeAlpha().raw().toBuffer();
+    const approved=await sharp({create:{width:composition.photoWidth,height:composition.footerHeight,channels:4,background:brandConfig.brandVisual.footer.background}}).composite([{input:await signatureSvg(composition.photoWidth,composition.footerHeight)}]).removeAlpha().raw().toBuffer();
+    assert.deepEqual(footer,approved,'Complete approved footer must be outside the photo, proportionally rendered without changes');
+   }else assert.deepEqual([...corner],[1,3,5].map(index=>parseInt(brandConfig.brandVisual.footer.background.slice(index,index+2),16)),'Signature must be outside the photo on the configured paper background');
   }
   for(const legacy of entry.legacy){assert.equal(hash(await readFile(legacy.path)),legacy.sha256);assert.notEqual(legacy.sha256,entry.sourceSha256);}
  }

@@ -90,3 +90,8 @@ body::after,dialog::after{content:"";position:fixed;inset:0;pointer-events:none;
 .product-image .photo-frame img{object-fit:contain}
 .brand .seal{border:0;width:54px;height:36px}
 .brand .seal svg{display:block;width:100%;height:100%}
+
+/* V1.1 approved artwork: preserve its complete shape and transparent edges. */
+.brand .brand-logo{display:block;width:230px;height:auto;max-height:94px;object-fit:contain;object-position:left center}
+footer .brand-logo{display:block;width:205px;height:auto;object-fit:contain}
+@media(max-width:600px){.brand .brand-logo{width:164px;max-height:78px}.header{min-height:94px}}

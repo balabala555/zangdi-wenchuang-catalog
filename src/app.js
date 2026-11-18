@@ -1,4 +1,4 @@
-import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,mountainSvg} from './brand.js';
+import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
 import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
 import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
@@ -12,7 +12,16 @@ document.title=brandConfig.name+' · 藏地选物';
 for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild)element.firstChild.textContent=brandConfig.name;
 for(const small of document.querySelectorAll('.brand small,footer>span small'))small.textContent=brandConfig.englishName;
 if($('.header-note'))$('.header-note').textContent=brandConfig.subtitle;
-if($('.brand .seal'))$('.brand .seal').innerHTML=mountainSvg();
+if(brandConfig.assets?.enabled){
+  for(const [element,key] of [[$('.brand'),'logo-color'],[$('footer>span'),'logo-color']]){
+    if(!element)continue;
+    const image=document.createElement('img');image.className='brand-logo';image.alt=brandConfig.name+' · '+brandConfig.subtitle;image.width=1220;image.height=580;image.decoding='async';
+    let surface=element,background='';
+    while(surface){background=getComputedStyle(surface).backgroundColor;if(background!=='rgba(0, 0, 0, 0)' && background!=='transparent')break;surface=surface.parentElement;}
+    const rgb=background.match(/[\d.]+/g);const dark=rgb && (Number(rgb[0])*0.2126+Number(rgb[1])*0.7152+Number(rgb[2])*0.0722)<128;
+    image.src=brandAssetUrl(dark?'logo-on-dark':key);element.replaceChildren(image);element.setAttribute('aria-label',brandConfig.name+'首页');
+  }
+}else if($('.brand .seal'))$('.brand .seal').innerHTML=mountainSvg();
 function brandQrUrl(path){return typeof embeddedBrandQrs!=='undefined' && embeddedBrandQrs[path] || './'+path;}
 const contactDialog=document.createElement('dialog');contactDialog.id='contact-dialog';contactDialog.setAttribute('aria-labelledby','contact-title');document.body.append(contactDialog);
 const contactButton=document.createElement('button');contactButton.id='open-contact';contactButton.className='secondary';contactButton.textContent='微信客服';contactButton.setAttribute('aria-label','查看客服微信和二维码');document.body.append(contactButton);
@@ -161,14 +170,15 @@ async function exportImage(){
       })));
     }
     const qrImages=await loadBrandQrs();
+    const footerArtwork=await loadBrandFooter();
     await document.fonts.ready;
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(qrImages.length?1200:760)+exportCart.length*155;const ctx=canvas.getContext('2d');
+    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(footerArtwork?650:qrImages.length?1200:760)+exportCart.length*155;const ctx=canvas.getContext('2d');
     ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=brandConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(brandConfig.englishName+' / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
     for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
       if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,photos[index],50,y,105,120);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
     const y=230+exportCart.length*155;ctx.fillStyle='#343b32';ctx.font='26px sans-serif';ctx.fillText(`参考合计：¥${total(exportCart).toFixed(2)}`,50,y+30);ctx.fillStyle='#7e836f';ctx.font='17px sans-serif';ctx.fillText('请与店主确认库存、运费及最终价格。',50,y+80);ctx.fillText('图片仅供选款参考，本清单不包含支付功能。',50,y+110);
-    brandFooter(ctx,y,qrImages);
+    brandFooter(ctx,y,qrImages,brandConfig,footerArtwork);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('图片生成失败，请重试');
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
     clearExport();exportFile=new File([blob],brandConfig.name+'-选购清单.png',{type:'image/png'});

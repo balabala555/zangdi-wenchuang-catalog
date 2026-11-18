@@ -25,7 +25,7 @@ test('watermarked renditions match manifests, are bounded and match correct publ
    assert.equal(entry[size].height,entry[size].photoHeight+entry[size].footerHeight);
    assert.equal(entry[size].width,entry[size].photoWidth);
    if(size!=='detail')assert.equal(metadata.isProgressive,false);
-   assert.equal(entry.watermarkVersion,'merchant-reference-v3-template-v5');
+   assert.equal(entry.watermarkVersion,'merchant-approved-assets-v1.1');
   }
   // The compatibility fallback and current detail rendition carry the same watermark.
   const detail=await readFile(new URL('../'+entry.detail.path,import.meta.url));

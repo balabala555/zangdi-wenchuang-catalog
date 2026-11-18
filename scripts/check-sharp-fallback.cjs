@@ -14,7 +14,7 @@ Module._load=function(request,...rest){
  const info=await sharp(bytes).metadata();if(info.width!==640)throw new Error('Wrong output');
  const {watermarkSvg,brandMarkSvg,signatureSvg}=await import('./watermark-renderer.mjs');
  const {brandConfig}=await import('../src/brand.js');
- const svg=await watermarkSvg(500,'#41463d',{...brandConfig,customerServices:[{label:'测试客服',wechatId:'test_service_01',qrCodePath:null}]});
+ const svg=await watermarkSvg(500,'#41463d',{...brandConfig,assets:{...brandConfig.assets,enabled:false},customerServices:[{label:'测试客服',wechatId:'test_service_01',qrCodePath:null}]});
  for(const artwork of [svg,await brandMarkSvg(300,'#42483e'),await signatureSvg(640,80)]){
   const glyphImage=await sharp(artwork).png().toBuffer();
   if(!(await sharp(glyphImage).metadata()).width)throw new Error('Three-layer glyph SVG not rendered by WASM');

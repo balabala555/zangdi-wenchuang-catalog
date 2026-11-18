@@ -1,5 +1,6 @@
 import {create} from 'fontkit';
 import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {brandConfig,validateBrand,mountainGeometry} from '../src/brand.js';
 export function adaptiveInk(luminance,config=brandConfig){return config.imageWatermark.adaptiveColor && luminance<config.imageWatermark.adaptiveThreshold?config.imageWatermark.lightColor:config.imageWatermark.darkColor;}
 export function visualInk(luminance,config=brandConfig){return luminance<0.5?config.brandVisual.lightColor:config.brandVisual.darkColor;}
@@ -29,8 +30,23 @@ function mountain(width,x,y,config){
   return `<g transform="translate(${x-width/2},${y}) scale(${scale})" fill="none" stroke="currentColor" stroke-width="${shape.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${mountainGeometry(config)}</g>`;
 }
 function svg(width,height,body,title){return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${Math.ceil(width)}" height="${Math.ceil(height)}" viewBox="0 0 ${Math.ceil(width)} ${Math.ceil(height)}"><title>${xml(title)}</title>${body}</svg>`);}
+export async function approvedAsset(key,config=brandConfig){
+  const file=config.assets.files[key],bytes=await readFile(new URL('../'+file.path,import.meta.url));
+  if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw new Error('品牌素材校验失败，请核对后更新全局配置：'+key);
+  return bytes;
+}
+const raster=(bytes,x,y,width,height)=>`<image x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet" href="data:image/png;base64,${bytes.toString('base64')}"/>`;
 export async function watermarkSvg(width,color,config=brandConfig,index=0){
   validateBrand(config);const face=await getFont(config.imageWatermark.fontAssetPath),serif=await getFont(config.brandVisual.fontAssetPath);
+  if(config.assets?.enabled){
+    const params=config.imageWatermark,w=width*0.22;
+    const light=color===params.lightColor,key=light?'watermark-light':'watermark-dark';
+    const logo=await approvedAsset(key,config),size=width*0.014;
+    const service=config.customerServices[index%config.customerServices.length];
+    const contact=fitGlyphs(face,service?'微信：'+service.wechatId:'',size,params.letterSpacing,w*0.94);
+    const h=w*580/1220+size*1.7;
+    return svg(w,h,`<g opacity="${params.opacity}">${raster(logo,0,0,w,w*580/1220)}<g fill="${xml(color)}" stroke="${contrastOutline(color)}" stroke-width="${params.minOutlinePx}" paint-order="stroke fill">${centered(contact,w/2,h-size*0.35)}</g></g>`,[config.name,service?.wechatId || ''].join(' | '));
+  }
   const first=width*0.53*(100/520)*config.imageWatermark.fontScale,second=first*config.imageWatermark.contactSizeRatio;
   const service=config.customerServices[index%config.customerServices.length];
   const name=glyphs(serif,config.name,first,config.brandVisual.letterSpacing*0.6);
@@ -42,6 +58,7 @@ export async function watermarkSvg(width,color,config=brandConfig,index=0){
 }
 export async function brandMarkSvg(width,color,config=brandConfig){
   validateBrand(config);const face=await getFont(config.brandVisual.fontAssetPath),params=config.brandVisual.mark;
+  if(config.assets?.enabled){const key=color===config.brandVisual.lightColor?'logo-on-dark':'logo-color';return svg(width,width*0.60,`<g opacity="${params.opacity}">${raster(await approvedAsset(key,config),0,0,width,width*0.60)}</g>`,[config.name,config.englishName,config.subtitle].join(' | '));}
   const name=fitGlyphs(face,config.name,width*params.nameSizeRatio,config.brandVisual.letterSpacing,width*0.94);
   const english=fitGlyphs(face,config.englishName,width*params.englishSizeRatio,config.brandVisual.letterSpacing*1.7,width*0.88);
   const subtitle=fitGlyphs(face,config.subtitle,width*params.subtitleSizeRatio,config.brandVisual.letterSpacing*0.6,width*0.68);
@@ -50,6 +67,7 @@ export async function brandMarkSvg(width,color,config=brandConfig){
 }
 export async function signatureSvg(width,height,config=brandConfig){
   validateBrand(config);const face=await getFont(config.brandVisual.fontAssetPath),params=config.brandVisual.footer;
+  if(config.assets?.enabled)return svg(width,height,raster(await approvedAsset('footer',config),0,0,width,height),[config.name,config.englishName,config.subtitle,...config.customerServices.map(service=>service.wechatId)].join(' | '));
   const name=fitGlyphs(face,config.name,width*params.nameSizeRatio,config.brandVisual.letterSpacing,width*0.32);
   const english=fitGlyphs(face,config.englishName,width*params.englishSizeRatio,0.35,width*0.32);
   const subtitle=fitGlyphs(face,config.subtitle,width*params.subtitleSizeRatio,0.2,width*0.30);

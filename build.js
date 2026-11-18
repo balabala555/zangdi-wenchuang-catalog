@@ -1,6 +1,7 @@
 import {readFile,mkdir,writeFile,stat} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import {products} from './src/data.js';
 import {brandConfig,validateBrand} from './src/brand.js';
 import {optimizedPhotos} from './src/generated-images.js';
@@ -15,7 +16,7 @@ export async function buildPreview(){
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
   for(const photo of paths){
-    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-reference-v3-template-v5')throw new Error('Missing verified watermarked rendition: '+photo);
+    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-approved-assets-v1.1')throw new Error('Missing verified watermarked rendition: '+photo);
     const rendition=optimizedPhotos[photo].detail.path;
     const bytes=(await stat(path.join(root,rendition))).size;
     if(embeddedBytes+bytes>maxEmbeddedBytes)continue;
@@ -30,7 +31,9 @@ export async function buildPreview(){
     const mime=path.extname(file).slice(1).toLowerCase().replace('jpg','jpeg');
     qrs[file]='data:image/'+mime+';base64,'+(await readFile(path.join(root,file))).toString('base64');
   }
-  const js='const embeddedBrandQrs='+JSON.stringify(qrs)+';\nconst embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
+  const brandAssets={};
+  if(brandConfig.assets?.enabled)for(const file of Object.values(brandConfig.assets.files)){const bytes=await readFile(path.join(root,file.path));if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw new Error('Brand asset checksum mismatch: '+file.path);brandAssets[file.path]='data:image/png;base64,'+bytes.toString('base64');}
+  const js='const embeddedBrandAssets='+JSON.stringify(brandAssets)+';\n'+'const embeddedBrandQrs='+JSON.stringify(qrs)+';\nconst embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
   const output=html.replace(/<a id="download-page"[^>]*>[^<]*<\/a>/,'').replace('<link rel="stylesheet" href="./src/style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="./src/app.js"></script>',()=>`<script>\n(()=>{\n${js.replace(/<\/script/gi,'<\\/script')}\n})();\n</script>`);
   await mkdir(path.join(root,'dist'),{recursive:true});
   await writeFile(path.join(root,'dist/index.html'),output);

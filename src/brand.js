@@ -4,6 +4,32 @@ export const brandConfig = {
   englishName: 'TIBETAN CRAFTS',
   subtitle: '藏地风物 · 生活美学',
   useRegisteredTrademark: false,
+  assets: {
+  "enabled": true,
+  "approvedFor": "扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510",
+  "files": {
+    "logo-color": {
+      "path": "public/branding/logo-color.png",
+      "sha256": "76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721"
+    },
+    "logo-on-dark": {
+      "path": "public/branding/logo-on-dark.png",
+      "sha256": "13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24"
+    },
+    "watermark-dark": {
+      "path": "public/branding/watermark-dark.png",
+      "sha256": "3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e"
+    },
+    "watermark-light": {
+      "path": "public/branding/watermark-light.png",
+      "sha256": "87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1"
+    },
+    "footer": {
+      "path": "public/branding/footer.png",
+      "sha256": "e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266"
+    }
+  }
+},
   customerServices: [
     {label: '客服1', wechatId: '15289007429', qrCodePath: 'public/branding/wechat-15289007429.jpg'},
     {label: '客服2', wechatId: '18673575510', qrCodePath: 'public/branding/wechat-18673575510.jpg'},
@@ -15,7 +41,7 @@ export const brandConfig = {
     fontAssetPath: 'assets/fonts/NotoSerifCJKsc-Regular.woff2',
     lightColor: '#f2e6c5', darkColor: '#42483e', letterSpacing: 0.12,
     mark: {widthRatio: 0.30, leftRatio: 0.035, topRatio: 0.075, maxHeightRatio: 0.18, opacity: 0.95, nameSizeRatio: 0.16, englishSizeRatio: 0.055, subtitleSizeRatio: 0.065},
-    footer: {heightRatio: 0.18, minHeightWidthRatio: 0.24, background: '#f7f3e9', color: '#48483e', opacity: 1, fontSizeRatio: 0.022, letterSpacing: 0.035, lineWidthRatio: 0.001, showQrCodes: true, qrWidthRatio: 0.15, nameSizeRatio: 0.04, subtitleSizeRatio: 0.018, englishSizeRatio: 0.012},
+    footer: {heightRatio: 0.21, minHeightWidthRatio: 0.28125, background: '#f7f3e9', color: '#48483e', opacity: 1, fontSizeRatio: 0.022, letterSpacing: 0.035, lineWidthRatio: 0.001, showQrCodes: true, qrWidthRatio: 0.15, nameSizeRatio: 0.04, subtitleSizeRatio: 0.018, englishSizeRatio: 0.012},
     mountain: {width: 214, height: 64, strokeWidth: 1.8, paths: [
       [[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],
       [[38,30],[55,50],[78,32]], [[96,2],[115,33],[98,25],[88,33]], [[172,30],[190,50]],
@@ -43,6 +69,8 @@ export function validateBrand(config=brandConfig){
   if(!/^assets\/fonts\/[a-zA-Z0-9_.-]+\.woff2$/.test(config.imageWatermark.fontAssetPath || ''))throw new Error('Invalid local watermark font');
   if(!(config.imageWatermark.outlineRatio>=0 && config.imageWatermark.outlineRatio<=0.05) || !(config.imageWatermark.minOutlinePx>=0 && config.imageWatermark.minOutlinePx<=1))throw new Error('Invalid watermark outline');
   for(const color of [config.imageWatermark.lightColor,config.imageWatermark.darkColor,config.pageWatermark.color])if(!/^#[a-f0-9]{6}$/i.test(color))throw new Error('Invalid watermark color');
+  if(config.assets?.enabled && config.assets.approvedFor!==[config.name,config.englishName,config.subtitle,...config.customerServices.map(service=>service.wechatId)].join('|'))throw new Error('品牌信息已变化，请先提供匹配的新品牌素材，不能继续使用旧落款或旧联系方式');
+  if(config.assets?.enabled){for(const key of ['logo-color','logo-on-dark','watermark-dark','watermark-light','footer']){const file=config.assets.files[key];if(!file || !/^public\/branding\/[a-zA-Z0-9_-]+\.png$/.test(file.path) || !/^[a-f0-9]{64}$/.test(file.sha256))throw new Error('Invalid approved brand asset: '+key);}}
   const visual=config.brandVisual;
   if(!visual || !/^assets\/fonts\/[a-zA-Z0-9_.-]+\.woff2$/.test(visual.fontAssetPath || ''))throw new Error('Invalid brand serif font');
   for(const color of [visual.lightColor,visual.darkColor,visual.footer.background,visual.footer.color])if(!/^#[a-f0-9]{6}$/i.test(color))throw new Error('Invalid brand visual color');
@@ -62,7 +90,12 @@ export function validateBrand(config=brandConfig){
 }
 export function brandMissing(config=brandConfig){return config.customerServices.filter(service=>!service.qrCodePath).map(service=>service.label+'二维码');}
 export function contactLines(config=brandConfig){return [config.name,config.englishName,config.subtitle,...config.customerServices.map(service=>service.label+'微信：'+service.wechatId),config.showWebsiteUrl?config.websiteUrl:''].filter(Boolean);}
-export function brandFooter(ctx,y,qrImages=[],config=brandConfig){
+export function brandFooter(ctx,y,qrImages=[],config=brandConfig,artwork=null){
+  if(config.assets?.enabled){
+    if(!artwork)throw new Error('品牌落款加载失败，请重试');
+    ctx.drawImage(artwork,50,y+145,800,800*artwork.naturalHeight/artwork.naturalWidth);
+    return;
+  }
   if(ctx.beginPath && ctx.moveTo && ctx.lineTo && ctx.stroke){
     const mountain=config.brandVisual.mountain,scale=105/mountain.width;
     ctx.strokeStyle=config.brandVisual.footer.color;ctx.lineWidth=1;
@@ -123,4 +156,20 @@ export function mountainGeometry(config=brandConfig){
 export function mountainSvg(config=brandConfig){
   const shape=config.brandVisual.mountain;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${shape.width} ${shape.height}" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="${shape.strokeWidth}" stroke-linejoin="round" stroke-linecap="round">${mountainGeometry(config)}</g></svg>`;
+}
+
+// Approved source assets are never redrawn. Offline preview embeds their exact bytes.
+export function brandAssetUrl(key,config=brandConfig){
+  const file=config.assets?.files[key];if(!file)throw new Error('Missing brand asset: '+key);
+  return typeof embeddedBrandAssets!=='undefined' && embeddedBrandAssets[file.path] || './'+file.path;
+}
+export async function loadBrandFooter(config=brandConfig){
+  if(!config.assets?.enabled)return null;
+  return new Promise((resolve,reject)=>{
+    const image=new Image();let finished=false;
+    const finish=error=>{if(finished)return;finished=true;clearTimeout(timer);image.onload=image.onerror=null;error?reject(error):resolve(image);};
+    const timer=setTimeout(()=>finish(Error('品牌落款加载超时，请重试')),8000);
+    image.onload=async()=>{try{await image.decode();finish();}catch{finish(Error('品牌落款无法读取，请重试'));}};
+    image.onerror=()=>finish(Error('品牌落款加载失败，请重试'));image.src=brandAssetUrl('footer',config);
+  });
 }
