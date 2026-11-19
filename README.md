@@ -210,3 +210,7 @@ Windows 首次安装使用 `npm ci --include=optional`；新增官方 WASM 备�
 页脚、`src/version.js`、`package.json` 和锁文件统一版本。`npm run check` 执行版本保护、测试及构建；启动/构建会自动校验已验收素材、商品关系和公开图片。变更见 [CHANGELOG](CHANGELOG.md)，恢复节点、备份和边界见 [版本保护](docs/version-protection.md)，本轮状态与测试见 [开发报告](docs/release-1.1.1-report.md)。
 
 网页水印已改用确认的 V1.1 品牌素材；静态页面也直接显示正确LOGO和名称。首页专用主视觉尚待确认，继续保留明确标注的占位。旧字体若仍用于渲染或测试会保留；只删除了不再使用的旧文字水印PNG及说明。
+
+## 首页视觉 V1.1（软件 1.2.0）
+
+首页已接入用户上传的实拍门店、七类入口、门头及两件有确认价格的小羊。新图片用途/隐私遮挡在 `src/homepage.js`，公开图自动压缩并嵌入确认水印；源图仍私有。完整修改、费用、测试限制、实测截图及预览方法见 [首页开发报告](docs/homepage-v1.1-report.md)。软件版本与品牌VI版本分开递增，恢复基线不改写。

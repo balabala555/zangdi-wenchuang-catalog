@@ -1,3 +1,4 @@
+import {homeConfig,categoryMatches} from './homepage.js';
 import {releaseInfo} from './version.js';
 import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,loadPageWatermark,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
 import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
@@ -31,6 +32,7 @@ function openContacts(focusIndex=0){
   if(!contactDialog.open)contactDialog.showModal();
   contactDialog.querySelector('#service-'+focusIndex)?.scrollIntoView({block:'nearest'});
 }
+const bottomContact=document.querySelector('.bottom-nav [data-open-contact]');if(bottomContact)bottomContact.replaceWith(contactButton);
 contactButton.addEventListener('click',()=>openContacts());
 contactDialog.addEventListener('click',async e=>{
   if(e.target===contactDialog || e.target.closest('[data-close]')){contactDialog.close();return;}
@@ -63,7 +65,7 @@ document.addEventListener('error',e=>{
   if(!(e.target instanceof HTMLImageElement))return;
   const img=e.target,fallback=img.dataset.fallback;
   if(fallback && new URL(fallback,document.baseURI).href!==img.src){
-    delete img.dataset.fallback;img.removeAttribute('srcset');img.src=fallback;return;
+    delete img.dataset.fallback;img.parentElement.querySelectorAll('source').forEach(source=>source.remove());img.removeAttribute('srcset');img.src=fallback;return;
   }
   img.hidden=true;img.parentElement.classList.add('image-failed');
 },true);
@@ -77,13 +79,14 @@ const moreButton=document.createElement('button');moreButton.id='load-more';more
 moreButton.addEventListener('click',()=>{visibleLimit+=24;renderProducts();});
 function renderProducts(){
   $('#categories').innerHTML=categories.map(c=>`<button class="${c===category?'active':''}" aria-pressed="${c===category}" data-category="${c}">${c}</button>`).join('');
-  const shown=products.filter(p=>(category===categories[0]||p.category===category)&&`${p.name}${p.subtitle}${p.category}`.includes(query));
+  const shown=products.filter(p=>(categoryMatches(p,category))&&`${p.name}${p.subtitle}${p.category}`.includes(query));
   $('#results-count').textContent=`共 ${shown.length} 件好物`;
   $('#empty').hidden=shown.length>0;moreButton.hidden=shown.length<=visibleLimit;
-  $('#products').innerHTML=shown.slice(0,visibleLimit).map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${p.name}详情"><div class="product-image">${imageMarkup(p)}<span class="tag">${p.tag}</span></div><div class="product-info"><span class="product-category">${p.category}</span><div class="product-title"><h3>${p.name}</h3><span class="price">¥ ${p.price.toFixed(2)}</span></div><p>${p.subtitle}</p></div></button>`).join('');
+  $('#products').innerHTML=shown.slice(0,visibleLimit).map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${p.name}详情"><div class="product-image">${imageMarkup(p)}<span class="tag">${p.demo===false?p.tag:'演示 · '+p.tag}</span></div><div class="product-info"><span class="product-category">${p.category}</span><div class="product-title"><h3>${p.name}</h3><span class="price">¥ ${p.price.toFixed(2)}</span></div><p>${p.subtitle}</p></div></button>`).join('');
 }
 $('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(b){category=b.dataset.category;visibleLimit=24;renderProducts();}});
-$('#search').addEventListener('input',e=>{query=e.target.value.trim();visibleLimit=24;renderProducts();});
+$('#search').addEventListener('input',e=>{query=e.target.value.trim();category=categories[0];visibleLimit=24;renderProducts();});
+$('#search').addEventListener('keydown',e=>{if(e.key==='Enter')$('#collection').scrollIntoView({behavior:'smooth'});});
 $('#products').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(b)openDetail(b.dataset.product);});
 function openDetail(id){selected=products.find(p=>p.id===id);variant=selected.variants[0];quantity=1;photoIndex=0;renderDetail();$('#detail').showModal();}
 function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div></div></div><div class="detail-actions">${brandContactMarkup()}<div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div>`;renderGallery();}
@@ -204,3 +207,22 @@ async function exportImage(){
 }
 for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-close]'))dialog.close();});
 renderProducts();updateCount();
+
+function homeImage(path,alt,{hero=false}={}){
+ const img=`<img class="home-photo" src="${photoUrl(path,hero?'detail':'card')}" srcset="${photoSrcset(path,hero?'detail':'card')}" sizes="${hero?'(max-width:760px) 94vw, 1120px':'(max-width:760px) 31vw, 340px'}" alt="${escapeHTML(alt)}" loading="${hero?'eager':'lazy'}" ${hero?'fetchpriority="high"':''} decoding="async" data-fallback="${photoUrl(path,'original')}">`;
+ // Cap phone hero bandwidth even on high-DPR screens; gallery detail remains full resolution.
+ return hero?`<picture><source media="(max-width:760px)" srcset="${photoUrl(path,'card')}">${img}</picture>`:img;
+}
+function selectHomeCategory(name){category=name;query='';$('#search').value='';visibleLimit=24;renderProducts();$('#collection').scrollIntoView({behavior:'smooth'});}
+$('#home-hero-photo').innerHTML=homeImage(homeConfig.hero,'扎西德勒鸭拉萨门店内部实拍',{hero:true});
+$('#home-category-grid').innerHTML=homeConfig.categories.map(c=>`<button class="home-category" data-home-category="${escapeHTML(c.name)}">${homeImage(c.photo,c.name+' · 门店实拍')}<span>${escapeHTML(c.name)}</span></button>`).join('')+`<button class="home-category store-tile" data-open-store>${homeImage(homeConfig.storefront,'拉萨门店门头实拍')}<span>我们的拉萨小店 →</span></button>`;
+$('#home-feature-grid').innerHTML=homeConfig.featuredIds.map(id=>{const p=products.find(p=>p.id===id);return p?`<button class="home-feature" data-feature-product="${id}">${homeImage(p.coverImage,p.name+' · 实拍展示')}<span>${escapeHTML(p.name)} <span>¥${p.price}/个</span></span></button>`:'';}).join('');
+document.addEventListener('click',e=>{
+ const c=e.target.closest('[data-home-category]');if(c)selectHomeCategory(c.dataset.homeCategory);
+ const p=e.target.closest('[data-feature-product]');if(p)openDetail(p.dataset.featureProduct);
+ if(e.target.closest('[data-show-all]'))selectHomeCategory(categories[0]);
+ if(e.target.closest('[data-open-list]'))$('#open-list').click();
+ if(e.target.closest('[data-open-contact]'))openContacts();
+ if(e.target.closest('[data-open-store]')){$('#store-photo').innerHTML=homeImage(homeConfig.storefront,'拉萨门店门头实拍',{hero:true});$('#store-dialog').showModal();}
+});
+$('#store-dialog').addEventListener('click',e=>{if(e.target===$('#store-dialog')||e.target.closest('[data-close]'))$('#store-dialog').close();if(e.target.closest('[data-store-contact]')){$('#store-dialog').close();openContacts();}});

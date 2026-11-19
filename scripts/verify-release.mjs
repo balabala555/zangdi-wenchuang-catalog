@@ -9,6 +9,8 @@ import assert from 'node:assert/strict';
 import {brandConfig,validateBrand} from '../src/brand.js';
 import {optimizedPhotos} from '../src/generated-images.js';
 import {releaseInfo} from '../src/version.js';
+import {homeSources} from '../src/homepage.js';
+import {homepagePhotos} from '../src/generated-homepage-images.js';
 import {products} from '../src/data.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -28,13 +30,14 @@ export async function verifyRelease({config=brandConfig,manifest=optimizedPhotos
   assert.deepEqual({id:p.id,price:p.price,variants:p.variants,variantImages:p.variantImages||null},expected,'Accepted product/variant relationship changed: '+p.id);
  }
  const referenced=[...new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images||[]),...Object.values(p.variantImages||{}).flat()]).filter(Boolean))];
- const originals=new Set([...baseline.privateOriginalHashes,...Object.values(manifest).map(p=>p.sourceSha256)]);
+ const originals=new Set([...baseline.privateOriginalHashes,...Object.values(manifest).map(p=>p.sourceSha256),...Object.values(homepagePhotos).map(p=>p.sourceSha256)]);
  let images=0;
  for(const file of referenced){
   const p=manifest[file];assert.ok(p,'Missing protected image: '+file);assert.equal(p.watermarkVersion,baseline.imageRecipe,'Outdated watermark recipe');
   const recipe=JSON.parse(p.recipe);assert.deepEqual(recipe.brand.assets,config.assets,'Image brand configuration is stale');
   for(const rendition of [p.public,p.thumb,p.card,p.detail,...p.legacy]){const bytes=await read(rendition.path);assert.equal(hash(bytes),rendition.sha256,'Protected image modified: '+rendition.path);assert.ok(!originals.has(hash(bytes)),'Public unwatermarked original: '+rendition.path);images++;}
  }
+ for(const source of Object.keys(homeSources)){const p=homepagePhotos[source];assert.ok(p,'Homepage protection missing');assert.equal(p.version,'homepage-vi1.1-private-masks-v1');assert.deepEqual(p.crop,homeSources[source].crop);assert.ok(p.recipe.endsWith(JSON.stringify(homeSources[source])),'Homepage privacy policy is stale');for(const rendition of [p.public,p.thumb,p.card,p.detail]){assert.equal(hash(await read(rendition.path)),rendition.sha256);assert.ok(!originals.has(rendition.sha256));images++;}}
  async function publicFiles(dir){for(const file of await readdir(path.join(root,dir),{withFileTypes:true})){const name=dir+'/'+file.name;if(file.isDirectory())await publicFiles(name);else{
   assert.ok(!/\.(psd|psb|ai|sketch|fig|xd|afdesign|xcf|lnk)$/i.test(name),'Private design/shortcut in public directory: '+name);
   assert.ok(!originals.has(hash(await read(name))),'Unwatermarked photo exposed: '+name);

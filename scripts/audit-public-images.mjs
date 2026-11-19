@@ -2,10 +2,11 @@
 import {readFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {homepagePhotos} from '../src/generated-homepage-images.js';
 import {optimizedPhotos} from '../src/generated-images.js';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8',maxBuffer:64*1024*1024}).trim();
-const knownOriginals=new Set(Object.values(optimizedPhotos).map(p=>p.sourceSha256));
+const knownOriginals=new Set([...Object.values(optimizedPhotos),...Object.values(homepagePhotos)].map(p=>p.sourceSha256));
 const files=git('ls-files','--cached','--others','--exclude-standard','-z','public/images','dist').split('\0').filter(Boolean);
 let exposed=0,checked=0;
 for(const file of files){

@@ -1,6 +1,6 @@
 {
   "name": "zangdi-wenchuang-catalog",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "node server.js",
     "build": "node build.js",
     "test": "node --test",
-    "images": "node scripts/optimize-images.mjs",
+    "images": "node scripts/optimize-images.mjs && node scripts/optimize-homepage.mjs",
     "predev": "npm run images && npm run verify:release",
     "prestart": "npm run images && npm run verify:release",
     "prebuild": "npm run images && npm run verify:release",

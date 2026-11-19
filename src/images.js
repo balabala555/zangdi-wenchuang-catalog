@@ -1,3 +1,4 @@
+import {homepagePhotos} from './generated-homepage-images.js';
 import {optimizedPhotos} from './generated-images.js';
 // Only uploaded same-site raster photos are accepted. Never borrow another variant's photos.
 export function photoPath(value) {
@@ -21,12 +22,12 @@ export function cartPhoto(product, variant) { return productGallery(product,vari
 export function photoUrl(path, size='detail') {
   if (!photoPath(path)) throw new Error('Invalid photo path');
   if(typeof embeddedPhotos !== 'undefined' && embeddedPhotos[path])return embeddedPhotos[path];
-  const entry=optimizedPhotos[path];
+  const entry=optimizedPhotos[path] || homepagePhotos[path];
   return './'+(entry?.[size]?.path || entry?.public?.path || path);
 }
 export function photoSrcset(path, size='detail') {
   if(typeof embeddedPhotos !== 'undefined')return '';
-  const entry=optimizedPhotos[path];
+  const entry=optimizedPhotos[path] || homepagePhotos[path];
   if(!entry)return '';
   return [...new Map((size==='card'?['thumb','card']:['card','detail']).map(size=>[entry[size].width,`${photoUrl(path,size)} ${entry[size].width}w`])).values()].join(', ');
 }

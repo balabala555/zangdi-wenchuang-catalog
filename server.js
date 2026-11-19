@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {homepagePhotos} from './src/generated-homepage-images.js';
 import {optimizedPhotos} from './src/generated-images.js';
 import {buildPreview} from './build.js';
 const root=path.dirname(fileURLToPath(import.meta.url));
@@ -10,7 +11,7 @@ const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8'
 export function createServer({basePath='/'}={}){
   const base='/'+basePath.split('/').filter(Boolean).join('/');
   const prefix=base==='/'?'':base;
-  const immutablePhotos=new Set(Object.values(optimizedPhotos).flatMap(entry=>['thumb','card','detail'].map(size=>'/'+entry[size].path)));
+  const immutablePhotos=new Set([...Object.values(optimizedPhotos),...Object.values(homepagePhotos)].flatMap(entry=>['thumb','card','detail'].map(size=>'/'+entry[size].path)));
   return http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost');

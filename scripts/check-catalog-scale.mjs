@@ -1,5 +1,6 @@
 // Test fixtures exist only in intercepted network responses, never in product data files.
 import assert from 'node:assert/strict';
+import {products} from '../src/data.js';
 import {createServer} from '../server.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -13,11 +14,11 @@ try{
  });
  await page.goto(`http://127.0.0.1:${server.address().port}`);
  assert.equal(await page.locator('.product-card').count(),24);
- assert.match(await page.locator('#results-count').textContent(),/1007/);
+ assert.ok((await page.locator('#results-count').textContent()).includes(String(1000+products.length)));
  await page.locator('#load-more').click();assert.equal(await page.locator('.product-card').count(),48);
  await page.locator('#search').fill('fixture-999');assert.equal(await page.locator('.product-card').count(),1);
  assert.equal(await page.locator('#load-more').isVisible(),false);
  await page.locator('.product-card').click();await page.locator('.gallery-stage img').evaluate(el=>el.decode());
- assert.ok(imageRequests.filter(u=>u.includes('/optimized/')).length<10);
+ assert.ok(new Set(imageRequests.filter(u=>u.includes('/optimized/') && !u.includes('-home-'))).size<10);
  console.log('PASS 1000 network-only fixtures: initial 24 cards, load next 24, global search, lazy size-specific requests without mass photo preloading');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

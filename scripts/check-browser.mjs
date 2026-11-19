@@ -59,7 +59,7 @@ try{
  assert.equal(await main().count(),0);assert.match(await page.locator('.gallery-caption').textContent(),/图片待上传/);
  await page.locator('#detail [data-close]').click();
  await page.locator('#search').fill('粗陶');assert.equal(await page.locator('.product-card').count(),1);
- await page.locator('#search').fill('');await page.locator('[data-category="纸间心意"]').click();assert.equal(await page.locator('.product-card').count(),1);
+ await page.locator('#search').fill('');await page.locator('[data-category="藏地旅行纪念"]').click();assert.equal(await page.locator('.product-card').count(),1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.goto(origin+'/preview.html');await page.locator('[data-product="p01"]').click();assert.match(await page.locator('.gallery-caption').textContent(),/图片待上传/);
  assert.deepEqual(errors,[]);

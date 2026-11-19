@@ -13,7 +13,7 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
   const base=origin+(basePath==='/'?'':basePath)+'/';
   try{
     const home=await fetch(base);assert.equal(home.status,200);
-    const html=await home.text();assert.match(html,/商品图片待上传/);
+    const html=await home.text();assert.match(html,/把喜欢的藏地/);assert.match(html,/id="home-category-grid"/);
     for(const [resource,type] of [['./src/style.css','text/css'],['./src/app.js','text/javascript'],['./src/data.js','text/javascript'],['./src/cart.js','text/javascript'],['./src/images.js','text/javascript']]){
       const res=await fetch(new URL(resource,base));assert.equal(res.status,200);assert.ok(res.headers.get('content-type').startsWith(type));
     }

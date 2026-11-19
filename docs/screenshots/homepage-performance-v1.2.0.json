@@ -1,0 +1,21 @@
+{
+  "note": "Local Chromium cold navigation; not a mobile network or Safari benchmark.",
+  "samples": [
+    {
+      "device": "mobile",
+      "navigationMs": 486,
+      "devicePixelRatio": 3,
+      "heroBytes": 85924,
+      "horizontalOverflow": false,
+      "external": []
+    },
+    {
+      "device": "desktop",
+      "navigationMs": 426,
+      "devicePixelRatio": 1,
+      "heroBytes": 384170,
+      "horizontalOverflow": false,
+      "external": []
+    }
+  ]
+}

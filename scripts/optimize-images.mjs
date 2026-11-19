@@ -34,6 +34,7 @@ async function verified(entry){
 }
 for(const source of sources){
  if(!/^public\/images\/[a-zA-Z0-9_./-]+\.(png|jpe?g|webp)$/i.test(source) || source.includes('..'))throw new Error('Invalid photo: '+source);
+ await mkdir(path.dirname(path.join(root,source)),{recursive:true});
  const old=previous[source];
  const privateFile=path.join(process.env.CATALOG_ORIGINALS_DIR || path.join(root,'.private-originals'),source.slice('public/images/'.length));
  let original;

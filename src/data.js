@@ -1,4 +1,5 @@
-export const categories = ['全部好物', '随身饰物', '织物布艺', '器物生活', '纸间心意', '羊毛毡生活好物'];
+import {homeConfig} from './homepage.js';
+export const categories = ['全部好物',...homeConfig.categories.map(c=>c.name)];
 export const products = [
   {id:'p01',name:'山色 · 编织手绳',category:'随身饰物',price:68,tag:'人气之选',image:null,subtitle:'一抹高原色，系住小小心愿',material:'棉线 / 合金配饰',size:'可调节围度约 14–22cm',description:'将高原的赭红、松绿与暖金织进一根手绳。轻巧的日常配饰，也是一份随身的小小心意。演示设计，非宗教用品。',variants:['赭红','松绿','暖金']},
   {id:'p02',name:'经纬 · 山纹织物袋',category:'织物布艺',price:128,tag:'日常相伴',image:null,subtitle:'装下日常，也装下一点远方',material:'棉麻混纺',size:'约 30 × 34cm',description:'以层叠山峦为灵感的几何纹样，搭配自然棉麻质感。通勤、散步或小小出走，都有轻松的陪伴。',variants:['亚麻原色','山岩棕']},
@@ -27,4 +28,13 @@ products.push({
     '浅薄荷绿':['public/images/felt-mushroom-bag/light-mint.jpg'],
     '亮蓝色':['public/images/felt-mushroom-bag/bright-blue.jpg']
   }
+});
+
+// Prices explicitly confirmed in the uploaded usage note; no inferred size/material/options.
+for(const [id,name,price,photo] of [['soft-lamb','软萌小羊',20,'soft'],['rainbow-lamb','彩虹小羊',25,'rainbow']])products.push({
+ id,name,price,unit:'个',category:'随手带走的小物',tag:'门店实拍',demo:false,
+ image:null,coverImage:'public/images/lamb/'+photo+'.jpg',images:['public/images/lamb/'+photo+'.jpg'],
+ subtitle:'拉萨门店实拍 · 按个计价',material:'待门店确认',size:'待门店确认',
+ description:'实拍展示图中包含多件商品。具体颜色、款式、材质、尺寸及库存请与客服确认，图片不代表可指定其中每一种图案。',
+ variants:['款式待客服确认'],variantImages:{}
 });

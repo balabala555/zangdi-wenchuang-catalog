@@ -2,7 +2,7 @@
 export const optimizedPhotos = {
   "public/images/felt-mushroom-bag/bright-blue.jpg": {
     "watermarkVersion": "merchant-approved-assets-v1.1",
-    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"2863a2a8935223d02d1ddf421e67e44d3abc9e58a195892a1116a0265b0a202d\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
+    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"50d830298416262c72f9a9015d0881b4d167aeef77e3a36b6174f6a026903e89\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
     "sourceSha256": "1de319e2d13a666f1ce8a442672c301b9ca374d2770f3f4071717af12117989c",
     "originalBytes": 1002457,
     "thumb": {
@@ -174,7 +174,7 @@ export const optimizedPhotos = {
   },
   "public/images/felt-mushroom-bag/light-gray.jpg": {
     "watermarkVersion": "merchant-approved-assets-v1.1",
-    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"2863a2a8935223d02d1ddf421e67e44d3abc9e58a195892a1116a0265b0a202d\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
+    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"50d830298416262c72f9a9015d0881b4d167aeef77e3a36b6174f6a026903e89\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
     "sourceSha256": "08cf043eaa6fea0bcd0d63be48fc9522831c01df7df38966905bbd66bb4f7b9d",
     "originalBytes": 1020117,
     "thumb": {
@@ -346,7 +346,7 @@ export const optimizedPhotos = {
   },
   "public/images/felt-mushroom-bag/light-mint.jpg": {
     "watermarkVersion": "merchant-approved-assets-v1.1",
-    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"2863a2a8935223d02d1ddf421e67e44d3abc9e58a195892a1116a0265b0a202d\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
+    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"50d830298416262c72f9a9015d0881b4d167aeef77e3a36b6174f6a026903e89\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
     "sourceSha256": "02c229eb1529e4d4a6e5285872f6214eb3a059acfaaae064b2811e6a0d8f8ce7",
     "originalBytes": 967091,
     "thumb": {
@@ -515,5 +515,131 @@ export const optimizedPhotos = {
         "sha256": "1ce7dc1313afaef39a46e663e927617c83826e351e6761b689d3b6e293432829"
       }
     ]
+  },
+  "public/images/lamb/rainbow.jpg": {
+    "watermarkVersion": "merchant-approved-assets-v1.1",
+    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"50d830298416262c72f9a9015d0881b4d167aeef77e3a36b6174f6a026903e89\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
+    "sourceSha256": "9f4afa038849c5b175930061c49429d7993762326993da15f9fcd5d2049731ac",
+    "originalBytes": 673252,
+    "thumb": {
+      "path": "public/images/optimized/49e281aaff873e68996ba551-thumb.webp",
+      "width": 232,
+      "height": 239,
+      "photoWidth": 232,
+      "photoHeight": 174,
+      "footerHeight": 65,
+      "resizeWidth": 240,
+      "resizeHeight": 174,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 67956,
+      "sha256": "49e281aaff873e68996ba55109a00bb2f3446173f56cb25c9e30aaf9a79c4f55"
+    },
+    "card": {
+      "path": "public/images/optimized/30ad7a4efe4e10deec01c1fe-card.webp",
+      "width": 620,
+      "height": 639,
+      "photoWidth": 620,
+      "photoHeight": 465,
+      "footerHeight": 174,
+      "resizeWidth": 640,
+      "resizeHeight": 465,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 406318,
+      "sha256": "30ad7a4efe4e10deec01c1fee82ff14a0737168319e07485fe1e171c8952e598"
+    },
+    "detail": {
+      "path": "public/images/optimized/e62ec9d37bf020e644649893-detail.jpg",
+      "width": 1536,
+      "height": 1584,
+      "photoWidth": 1536,
+      "photoHeight": 1152,
+      "footerHeight": 432,
+      "resizeWidth": 1600,
+      "resizeHeight": 1163,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 934360,
+      "sha256": "e62ec9d37bf020e644649893218905a6a71ddb008da4f5b4a022f52df923a552"
+    },
+    "public": {
+      "path": "public/images/lamb/rainbow.jpg",
+      "bytes": 934360,
+      "sha256": "e62ec9d37bf020e644649893218905a6a71ddb008da4f5b4a022f52df923a552"
+    },
+    "legacy": []
+  },
+  "public/images/lamb/soft.jpg": {
+    "watermarkVersion": "merchant-approved-assets-v1.1",
+    "recipe": "{\"legacy\":\"07b4ccc9f3e7b73337ad23c0c9a50babf56908336d1ef46c1c012739479749e3\",\"settings\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"watermarkVersion\":\"merchant-approved-assets-v1.1\",\"qrHashes\":[{\"id\":\"15289007429\",\"path\":\"public/branding/wechat-15289007429.jpg\",\"hash\":\"d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb\"},{\"id\":\"18673575510\",\"path\":\"public/branding/wechat-18673575510.jpg\",\"hash\":\"3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4\"}],\"fontHash\":\"6e98a5717a6d310ad49ebf4e2c446a600ad9603b22514969000fcb09f138fe16\",\"rendererHash\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\",\"pipelineHash\":\"50d830298416262c72f9a9015d0881b4d167aeef77e3a36b6174f6a026903e89\",\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"visual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"contacts\":[\"15289007429\",\"18673575510\"],\"watermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]}},\"encoding\":\"lossless-webp-or-jpeg94-srgb\",\"layout\":\"three-layers-authentic-qr-footer-v5\"}",
+    "sourceSha256": "9bdda572592eb6f94a258bee1c2108d648a1283a954f1b89487a6ea33921da18",
+    "originalBytes": 721961,
+    "thumb": {
+      "path": "public/images/optimized/a54250a792b751663d618949-thumb.webp",
+      "width": 232,
+      "height": 239,
+      "photoWidth": 232,
+      "photoHeight": 174,
+      "footerHeight": 65,
+      "resizeWidth": 240,
+      "resizeHeight": 174,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 78946,
+      "sha256": "a54250a792b751663d618949307bf56307e8ea46a26c423f0bd1a6a4881b3177"
+    },
+    "card": {
+      "path": "public/images/optimized/a8991b631d90002b5bf9e756-card.webp",
+      "width": 620,
+      "height": 639,
+      "photoWidth": 620,
+      "photoHeight": 465,
+      "footerHeight": 174,
+      "resizeWidth": 640,
+      "resizeHeight": 465,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 450738,
+      "sha256": "a8991b631d90002b5bf9e756a331b2f067a2b27df7f41d1eb1bb56b0e5bdbeb2"
+    },
+    "detail": {
+      "path": "public/images/optimized/e289a55817c040b8a11012d1-detail.jpg",
+      "width": 1536,
+      "height": 1584,
+      "photoWidth": 1536,
+      "photoHeight": 1152,
+      "footerHeight": 432,
+      "resizeWidth": 1600,
+      "resizeHeight": 1163,
+      "layers": [
+        "brand-mark",
+        "distributed-protection",
+        "brand-signature"
+      ],
+      "bytes": 990518,
+      "sha256": "e289a55817c040b8a11012d19c7843925d29ed4cee4e04e024d47a303c54ca74"
+    },
+    "public": {
+      "path": "public/images/lamb/soft.jpg",
+      "bytes": 990518,
+      "sha256": "e289a55817c040b8a11012d19c7843925d29ed4cee4e04e024d47a303c54ca74"
+    },
+    "legacy": []
   }
 };

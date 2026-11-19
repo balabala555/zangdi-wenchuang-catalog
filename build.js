@@ -3,6 +3,8 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {products} from './src/data.js';
+import {homeSources} from './src/homepage.js';
+import {homepagePhotos} from './src/generated-homepage-images.js';
 import {brandConfig,validateBrand} from './src/brand.js';
 import {optimizedPhotos} from './src/generated-images.js';
 import {photoPath} from './src/images.js';
@@ -11,13 +13,14 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 export async function buildPreview(){
   validateBrand();
   const read=file=>readFile(path.join(root,file),'utf8');
-  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/images.js','src/app.js'].map(read));
-  const paths=new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).map(photoPath).filter(Boolean));
+  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/homepage.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/generated-homepage-images.js','src/images.js','src/app.js'].map(read));
+  const paths=new Set([...Object.keys(homeSources),...products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()])].map(photoPath).filter(Boolean));
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
   for(const photo of paths){
-    if(optimizedPhotos[photo]?.watermarkVersion!=='merchant-approved-assets-v1.1')throw new Error('Missing verified watermarked rendition: '+photo);
-    const rendition=optimizedPhotos[photo].detail.path;
+    const entry=optimizedPhotos[photo] || homepagePhotos[photo];
+    if(!entry || !(entry.watermarkVersion==='merchant-approved-assets-v1.1' || entry.version==='homepage-vi1.1-private-masks-v1'))throw new Error('Missing verified watermarked rendition: '+photo);
+    const rendition=entry.detail.path;
     const bytes=(await stat(path.join(root,rendition))).size;
     if(embeddedBytes+bytes>maxEmbeddedBytes)continue;
     embeddedBytes+=bytes;
