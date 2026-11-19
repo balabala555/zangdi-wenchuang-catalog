@@ -14,7 +14,8 @@ export const homeConfig = {
 };
 export const homeSources=Object.fromEntries([homeConfig.hero,homeConfig.storefront,...homeConfig.categories.map(c=>c.photo)].map(path=>[path,{
  // Opaque irreversible masks are applied before resize/watermark. Normalized coordinates.
- masks:path.endsWith('/hero.jpg')?[[.945,.293,.055,.265],[.095,.56,.075,.15],[0,.87,.13,.06],[.23,.65,.08,.045]]:path.endsWith('/storefront.jpg')?[[.718,.67,.045,.22],[.338,.865,.035,.10]]:[],
+ masks:path.endsWith('/hero.jpg')?[[1474/1536,373/1152,36/1536,40/1152],[1475/1536,451/1152,36/1536,40/1152],[1487/1536,598/1152,49/1536,41/1152],[178/1536,698/1152,28/1536,40/1152],[183/1536,758/1152,32/1536,39/1152],[201/1536,746/1152,26/1536,37/1152],[230/1536,733/1152,26/1536,33/1152],[373/1536,759/1152,91/1536,28/1152],[0,1013/1152,175/1536,49/1152]]:path.endsWith('/storefront.jpg')?[[.718,.67,.045,.22],[.338,.865,.035,.10]]:[],
+ refinement:path.endsWith('/hero.jpg')?{version:'hero-refinement-v1',sourceQuad:[[0,45/1151],[1,8/1151],[1480/1535,1115/1151],[45/1535,1150/1151]],width:1480,height:1104,centerY:.59,ratios:{thumb:1.94,card:1.94,detail:2.15},brightness:1.025,whiteBalance:[1,1,1.004],sharpenSigma:.35,feather:12}:null,
  crop:path.endsWith('/jewelry.jpg')?[.77,.16,.23,.56]:null,
 }]));
 export function categoryMatches(product,category){

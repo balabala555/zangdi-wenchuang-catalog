@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
+import {releaseInfo} from '../src/version.js';
 import {createServer} from '../server.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
@@ -18,8 +19,8 @@ try{
   const perf=await page.evaluate(()=>({navigationMs:Math.round(performance.now()),devicePixelRatio:devicePixelRatio,heroBytes:performance.getEntriesByType('resource').filter(r=>r.initiatorType==='img' && r.name===document.querySelector('#home-hero-photo img').currentSrc).map(r=>r.encodedBodySize)[0],horizontalOverflow:document.documentElement.scrollWidth>innerWidth,external:performance.getEntriesByType('resource').filter(r=>!r.name.startsWith(location.origin)&&!r.name.startsWith('data:')).map(r=>r.name)}));
   assert.equal(perf.horizontalOverflow,false);assert.deepEqual(perf.external,[]);assert.ok(perf.heroBytes<500000,'Compressed hero budget must be under 500KB');metrics.push({device:name,...perf});
   await page.locator('.home-photo').evaluateAll(imgs=>Promise.all(imgs.map(async i=>{i.loading='eager';await i.decode();})));
-  await page.screenshot({path:`${out}/homepage-${name}-v1.2.0.png`,fullPage:true});
-  await page.screenshot({path:`${out}/homepage-${name}-first-screen-v1.2.0.png`});
+  await page.screenshot({path:`${out}/homepage-${name}-v${releaseInfo.version}.png`,fullPage:true});
+  await page.screenshot({path:`${out}/homepage-${name}-first-screen-v${releaseInfo.version}.png`});
   await page.locator('[data-home-category="羊毛毡生活好物"]').click();assert.equal(await page.locator('.product-card').count(),1);
   await page.locator('#search').fill('彩虹小羊');assert.equal(await page.locator('.product-card').count(),1);
   await page.locator('[data-feature-product="soft-lamb"]').click();assert.match(await page.locator('#detail-title').textContent(),/软萌小羊/);await page.locator('#add-cart').click();
@@ -30,6 +31,6 @@ try{
  }
  for(const width of [320,768]){const narrow=await browser.newPage({viewport:{width,height:844}});await narrow.goto(`http://127.0.0.1:${server.address().port}/`);assert.equal(await narrow.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Narrow/tablet overflow');await narrow.close();}
  const offline=await browser.newPage();await offline.route('**/public/**',r=>r.abort());await offline.goto(`http://127.0.0.1:${server.address().port}/preview.html`);await offline.locator('#home-hero-photo img').evaluate(i=>i.decode());assert.equal(await offline.locator('[data-home-category]').count(),7);await offline.close();
- await writeFile(`${out}/homepage-performance-v1.2.0.json`,JSON.stringify({note:'Local Chromium cold navigation; not a mobile network or Safari benchmark.',samples:metrics},null,2));
+ await writeFile(`${out}/homepage-performance-v${releaseInfo.version}.json`,JSON.stringify({note:'Local Chromium cold navigation; not a mobile network or Safari benchmark.',samples:metrics},null,2));
  console.log('PASS homepage: 7 categories, real hero/features, search, ¥45 cart/PNG, store/contact, no overflow/external requests, offline and screenshots',metrics);
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

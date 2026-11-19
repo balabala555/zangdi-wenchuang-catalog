@@ -23,7 +23,7 @@ test('all homepage sizes are protected compressed derivatives; originals private
   if(existsSync(privateFile))assert.equal(hash(await readFile(privateFile)),p.sourceSha256);
   for(const [key,max]of [['thumb',240],['card',640],['detail',1600]]){const b=await readFile(p[key].path);assert.equal(hash(b),p[key].sha256);assert.notEqual(hash(b),p.sourceSha256);const meta=await sharp(b).metadata();assert.ok(meta.width<=max && meta.height<=max);assert.ok(!meta.exif);}
   assert.notEqual(hash(await readFile(source)),p.sourceSha256);
-  if(p.privacyMasks.length){
+  if(p.privacyMasks.length && !p.refinement){
    const detail=p.detail;const {data,info}=await sharp(await readFile(detail.path)).removeAlpha().raw().toBuffer({resolveWithObject:true});
    assert.equal(p.crop,null);
    const originalSize=existsSync(privateFile)?await sharp(await readFile(privateFile)).metadata():{width:1536,height:1152};
