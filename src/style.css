@@ -95,3 +95,5 @@ body::after,dialog::after{content:"";position:fixed;inset:0;pointer-events:none;
 .brand .brand-logo{display:block;width:230px;height:auto;max-height:94px;object-fit:contain;object-position:left center}
 footer .brand-logo{display:block;width:205px;height:auto;object-fit:contain}
 @media(max-width:600px){.brand .brand-logo{width:164px;max-height:78px}.header{min-height:94px}}
+
+.story-logo{display:block;width:130px;max-width:100%;height:auto;object-fit:contain}.release-version{font-size:11px;letter-spacing:.03em;color:var(--muted)}

@@ -6,3 +6,14 @@ dist/
 
 # Private unwatermarked uploads: never commit or serve.
 .private-originals/
+
+# Private design sources must stay outside published assets.
+.private-designs/
+*.psd
+*.psb
+*.ai
+*.sketch
+*.fig
+*.xd
+*.afdesign
+*.xcf

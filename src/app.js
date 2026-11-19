@@ -1,15 +1,16 @@
-import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
+import {releaseInfo} from './version.js';
+import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,loadPageWatermark,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
 import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
 import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
 const $=s=>document.querySelector(s);
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 validateBrand();
-const pageMark='url("data:image/svg+xml,'+encodeURIComponent(pageWatermarkSvg())+'")';
-document.documentElement.style.setProperty('--page-brand-watermark',pageMark);
 document.documentElement.style.setProperty('--page-brand-opacity',brandConfig.pageWatermark.opacity);
+loadPageWatermark().then(svg=>document.documentElement.style.setProperty('--page-brand-watermark','url("data:image/svg+xml,'+encodeURIComponent(svg)+'")')).catch(error=>console.warn('网页品牌水印加载失败：'+error.message));
 document.title=brandConfig.name+' · 藏地选物';
-for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild)element.firstChild.textContent=brandConfig.name;
+if($('.release-version'))$('.release-version').textContent='测试版 v'+releaseInfo.version+' · VI '+releaseInfo.viVersion;
+for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild && !element.querySelector('img'))element.firstChild.textContent=brandConfig.name;
 for(const small of document.querySelectorAll('.brand small,footer>span small'))small.textContent=brandConfig.englishName;
 if($('.header-note'))$('.header-note').textContent=brandConfig.subtitle;
 if(brandConfig.assets?.enabled){

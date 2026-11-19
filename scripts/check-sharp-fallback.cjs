@@ -9,7 +9,7 @@ Module._load=function(request,...rest){
  const sharp=(await import('sharp')).default;
  if(!sharp.versions.emscripten)throw new Error('Test did not use WebAssembly backend');
  const fs=require('node:fs/promises');
- const layer=await fs.readFile(require('node:path').join(__dirname,'../assets/watermark-text.png'));
+ const layer=await sharp(await fs.readFile(require('node:path').join(__dirname,'../public/branding/watermark-dark.png'))).resize(240).png().toBuffer();
  const bytes=await sharp({create:{width:640,height:640,channels:4,background:'#f7f5ef'}}).withIccProfile('srgb').composite([{input:layer,left:10,top:100}]).webp({lossless:true}).toBuffer();
  const info=await sharp(bytes).metadata();if(info.width!==640)throw new Error('Wrong output');
  const {watermarkSvg,brandMarkSvg,signatureSvg}=await import('./watermark-renderer.mjs');

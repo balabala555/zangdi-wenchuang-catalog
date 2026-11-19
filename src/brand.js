@@ -139,10 +139,14 @@ export function loadBrandQrs(config=brandConfig){
     });
   })).then(images=>images.filter(Boolean));
 }
-export function pageWatermarkSvg(config=brandConfig){
+export function pageWatermarkSvg(config=brandConfig,assetDataUrl=null){
   validateBrand(config);
   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const {fontSize,angle,color}=config.pageWatermark;
+  if(config.assets?.enabled && assetDataUrl){
+    const groups=config.customerServices.map((service,index)=>`<g transform="translate(${index?215:20},${index?200:70}) rotate(${angle})"><image href="${escape(assetDataUrl)}" x="0" y="-46" width="150" height="71.32" preserveAspectRatio="xMidYMid meet"/><text x="75" y="40" text-anchor="middle" font-size="${fontSize*0.7}">微信：${escape(service.wechatId)}</text></g>`).join('');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280"><g fill="${escape(color)}" font-family="sans-serif">${groups}</g></svg>`;
+  }
   const group=(x,y,index)=>{
     const service=config.customerServices[index%config.customerServices.length];
     return `<g transform="translate(${x},${y}) rotate(${angle})"><g transform="translate(0,-33) scale(0.22)" fill="none" stroke="${escape(color)}" stroke-width="${config.brandVisual.mountain.strokeWidth}">${mountainGeometry(config)}</g><text letter-spacing="0.06em" font-size="${fontSize}" y="0">${escape(config.name)}</text>${service?`<text font-size="${fontSize*0.7}" y="${fontSize*1.3}">微信：${escape(service.wechatId)}</text>`:''}</g>`;
@@ -172,4 +176,16 @@ export async function loadBrandFooter(config=brandConfig){
     image.onload=async()=>{try{await image.decode();finish();}catch{finish(Error('品牌落款无法读取，请重试'));}};
     image.onerror=()=>finish(Error('品牌落款加载失败，请重试'));image.src=brandAssetUrl('footer',config);
   });
+}
+
+export async function loadPageWatermark(config=brandConfig){
+  if(!config.assets?.enabled)return pageWatermarkSvg(config);
+  const url=brandAssetUrl('watermark-dark',config);
+  let data=url;
+  if(!url.startsWith('data:')){
+    const response=await fetch(url);if(!response.ok)throw Error('品牌水印素材请求失败');
+    const bytes=await response.blob();
+    data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('品牌水印素材读取失败'));reader.readAsDataURL(bytes);});
+  }
+  return pageWatermarkSvg(config,data);
 }

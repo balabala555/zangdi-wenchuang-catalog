@@ -1,6 +1,6 @@
 {
   "name": "zangdi-wenchuang-catalog",
-  "version": "0.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,10 +9,12 @@
     "build": "node build.js",
     "test": "node --test",
     "images": "node scripts/optimize-images.mjs",
-    "predev": "npm run images",
-    "prestart": "npm run images",
-    "prebuild": "npm run images",
-    "audit:images": "node scripts/audit-public-images.mjs"
+    "predev": "npm run images && npm run verify:release",
+    "prestart": "npm run images && npm run verify:release",
+    "prebuild": "npm run images && npm run verify:release",
+    "audit:images": "node scripts/audit-public-images.mjs",
+    "verify:release": "node scripts/verify-release.mjs",
+    "check": "npm run verify:release && npm test && npm run build"
   },
   "engines": {
     "node": ">=20.9.0"

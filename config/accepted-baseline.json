@@ -1,0 +1,101 @@
+{
+  "baselineCommit": "643a768498d42a2b394475a4682d46bcd06fef97",
+  "viVersion": "1.1",
+  "imageRecipe": "merchant-approved-assets-v1.1",
+  "protectedMedia": {
+    "public/branding/logo-color.png": "76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721",
+    "public/branding/logo-on-dark.png": "13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24",
+    "public/branding/watermark-dark.png": "3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e",
+    "public/branding/watermark-light.png": "87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1",
+    "public/branding/footer.png": "e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266",
+    "public/branding/wechat-15289007429.jpg": "d5052393ee57d98c3877ad3b5751968f22203aa453acfc8e25e23a14fbb9feeb",
+    "public/branding/wechat-18673575510.jpg": "3a013fc9b70024981432d08aa2853b576ce72d7827755afb68cda0c3ba459dc4"
+  },
+  "privateOriginalHashes": [
+    "1de319e2d13a666f1ce8a442672c301b9ca374d2770f3f4071717af12117989c",
+    "08cf043eaa6fea0bcd0d63be48fc9522831c01df7df38966905bbd66bb4f7b9d",
+    "02c229eb1529e4d4a6e5285872f6214eb3a059acfaaae064b2811e6a0d8f8ce7"
+  ],
+  "products": [
+    {
+      "id": "p01",
+      "price": 68,
+      "variants": [
+        "赭红",
+        "松绿",
+        "暖金"
+      ],
+      "variantImages": {
+        "赭红": [],
+        "松绿": [],
+        "暖金": []
+      }
+    },
+    {
+      "id": "p02",
+      "price": 128,
+      "variants": [
+        "亚麻原色",
+        "山岩棕"
+      ],
+      "variantImages": null
+    },
+    {
+      "id": "p03",
+      "price": 96,
+      "variants": [
+        "砂白",
+        "岩棕"
+      ],
+      "variantImages": null
+    },
+    {
+      "id": "p04",
+      "price": 32,
+      "variants": [
+        "山川四季套装",
+        "日光湖泊套装"
+      ],
+      "variantImages": null
+    },
+    {
+      "id": "p05",
+      "price": 58,
+      "variants": [
+        "日落橘",
+        "湖水绿",
+        "米白"
+      ],
+      "variantImages": null
+    },
+    {
+      "id": "p06",
+      "price": 78,
+      "variants": [
+        "原麻色",
+        "暖沙色"
+      ],
+      "variantImages": null
+    },
+    {
+      "id": "felt-mushroom-bag",
+      "price": 90,
+      "variants": [
+        "浅灰色",
+        "浅薄荷绿",
+        "亮蓝色"
+      ],
+      "variantImages": {
+        "浅灰色": [
+          "public/images/felt-mushroom-bag/light-gray.jpg"
+        ],
+        "浅薄荷绿": [
+          "public/images/felt-mushroom-bag/light-mint.jpg"
+        ],
+        "亮蓝色": [
+          "public/images/felt-mushroom-bag/bright-blue.jpg"
+        ]
+      }
+    }
+  ]
+}

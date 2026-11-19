@@ -11,7 +11,7 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 export async function buildPreview(){
   validateBrand();
   const read=file=>readFile(path.join(root,file),'utf8');
-  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/images.js','src/app.js'].map(read));
+  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/images.js','src/app.js'].map(read));
   const paths=new Set(products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()]).map(photoPath).filter(Boolean));
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
@@ -34,7 +34,8 @@ export async function buildPreview(){
   const brandAssets={};
   if(brandConfig.assets?.enabled)for(const file of Object.values(brandConfig.assets.files)){const bytes=await readFile(path.join(root,file.path));if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw new Error('Brand asset checksum mismatch: '+file.path);brandAssets[file.path]='data:image/png;base64,'+bytes.toString('base64');}
   const js='const embeddedBrandAssets='+JSON.stringify(brandAssets)+';\n'+'const embeddedBrandQrs='+JSON.stringify(qrs)+';\nconst embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
-  const output=html.replace(/<a id="download-page"[^>]*>[^<]*<\/a>/,'').replace('<link rel="stylesheet" href="./src/style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="./src/app.js"></script>',()=>`<script>\n(()=>{\n${js.replace(/<\/script/gi,'<\\/script')}\n})();\n</script>`);
+  let brandedHtml=html;for(const [file,url] of Object.entries(brandAssets))brandedHtml=brandedHtml.replaceAll('src="./'+file+'"','src="'+url+'"');
+  const output=brandedHtml.replace(/<a id="download-page"[^>]*>[^<]*<\/a>/,'').replace('<link rel="stylesheet" href="./src/style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="./src/app.js"></script>',()=>`<script>\n(()=>{\n${js.replace(/<\/script/gi,'<\\/script')}\n})();\n</script>`);
   await mkdir(path.join(root,'dist'),{recursive:true});
   await writeFile(path.join(root,'dist/index.html'),output);
   return output;

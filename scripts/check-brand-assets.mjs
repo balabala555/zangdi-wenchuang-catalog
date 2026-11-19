@@ -18,6 +18,7 @@ try{
   if(mode==='offline')await page.route('**/public/branding/**',route=>route.abort());
   if(mode==='dark')await page.route('**/src/style.css',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\n.header{background:#343b32!important}'});});
   await page.goto(origin+(mode==='offline'?'/preview.html':'/'));
+  await page.waitForFunction(()=>{const mark=getComputedStyle(document.documentElement).getPropertyValue('--page-brand-watermark');return mark.includes('base64') && mark.includes('15289007429');});
   const logo=page.locator('.brand-logo').first();await logo.evaluate(image=>image.decode());
   const expected=brandConfig.assets.files[mode==='dark'?'logo-on-dark':'logo-color'];
   const src=await logo.getAttribute('src');
@@ -32,11 +33,12 @@ try{
   assert.equal(footer.args[2]/footer.args[3],3200/900);
   await page.close();
  }
+ const noJs=await browser.newPage({javaScriptEnabled:false});await noJs.goto(origin);assert.match(await noJs.title(),/扎西德勒鸭/);assert.equal(await noJs.locator('.brand-logo').first().getAttribute('src'),'./public/branding/logo-color.png');assert.ok(!(await noJs.locator('body').textContent()).includes('山间来信'));await noJs.close();
  const page=await browser.newPage();
  await page.addInitScript(()=>localStorage.setItem('shan-cart',JSON.stringify([{id:'felt-mushroom-bag',variant:'浅灰色',quantity:1}])));
  await page.route('**/public/branding/footer.png',route=>route.abort());
  await page.goto(origin);await page.locator('#open-list').click();await page.locator('#export-image').click();
  await page.waitForFunction(()=>document.querySelector('#export-image').disabled===false);
  assert.equal(await page.locator('#export-preview').count(),0,'Missing footer must block an incomplete export');
- console.log('PASS V1.1: approved light/dark logos, mobile proportions, offline exact bytes, export original footer and missing-footer error');
+ console.log('PASS V1.1: approved light/dark logos, mobile proportions, offline exact bytes, export original footer, approved page watermark, no-JS static branding and missing-footer error');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

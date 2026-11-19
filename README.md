@@ -204,3 +204,9 @@ Windows 首次安装使用 `npm ci --include=optional`；新增官方 WASM 备�
 清单 PNG 使用上传的 footer.png 原始素材按比例绘制，不重画其二维码。已离线解码核对两处二维码与两个原始 JPG 的实际链接完全一致；两个 JPG 文件也保持字节不变，网页固定客服区仍显示原始 JPG。缺失落款或照片时阻止生成不完整清单，分享取消和长按保存备用不变。离线 `dist/index.html` 内嵌原始品牌素材和真实二维码，断网也能预览。商品图的小缩略二维码仍应放大后扫码。
 
 没有新增 npm 依赖、付费 API 或收费服务。未来新增商品：原照片保存到 `.private-originals/`，商品数据填写对应 `public/images/` 路径和款式关系，然后运行 `npm run images` 或 `npm run dev` / `npm run build`，自动完成品牌处理和分尺寸生成。不要把无水印照片直接放入 public；没有私有原图时仅允许复用校验通过的公开输出。旧历史仍有早期无水印原图，未自行清理。
+
+## 当前开发版本 1.1.1（VI 1.1）
+
+页脚、`src/version.js`、`package.json` 和锁文件统一版本。`npm run check` 执行版本保护、测试及构建；启动/构建会自动校验已验收素材、商品关系和公开图片。变更见 [CHANGELOG](CHANGELOG.md)，恢复节点、备份和边界见 [版本保护](docs/version-protection.md)，本轮状态与测试见 [开发报告](docs/release-1.1.1-report.md)。
+
+网页水印已改用确认的 V1.1 品牌素材；静态页面也直接显示正确LOGO和名称。首页专用主视觉尚待确认，继续保留明确标注的占位。旧字体若仍用于渲染或测试会保留；只删除了不再使用的旧文字水印PNG及说明。
