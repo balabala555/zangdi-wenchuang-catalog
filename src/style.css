@@ -109,3 +109,13 @@ footer .brand-logo{display:block;width:205px;height:auto;object-fit:contain}
 main{margin:0 auto}#home-hero-photo{height:auto;aspect-ratio:1.94}#home-hero-photo .home-photo{height:100%;position:absolute;inset:0}.home-category .home-photo,.home-feature .home-photo{height:auto}.home-category,.home-feature{align-self:start}
 @media(min-width:1000px){#home-hero-photo{aspect-ratio:2.15}}
 @media(max-width:360px){.hero h1{font-size:19px;letter-spacing:0}.bottom-nav{gap:20px}.home-category>span{font-size:11px}}
+
+/* V1.2.1 stability: reserved logo/image geometry and Safari viewport/safe areas. */
+:root{--bottom-nav-height:calc(50px + env(safe-area-inset-bottom,0px))}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(var(--bottom-nav-height) + 16px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.header .brand{flex:0 0 auto}.brand-logo{aspect-ratio:1220/580;flex-shrink:0;color:var(--accent);font:20px var(--serif)}
+.home-photo{background:#ece6d8}.home-category.image-failed::before,.home-feature.image-failed::before{content:'图片暂未加载';display:grid;place-items:center;aspect-ratio:1.4;background:#ece6d8;border-radius:8px;color:var(--muted);font-size:12px}
+.home-feature.image-failed::before{aspect-ratio:1.88}.hero-art.image-failed::after{content:'门店照片暂未加载';position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
+.bottom-nav{padding-left:max(15px,env(safe-area-inset-left,0px));padding-right:max(15px,env(safe-area-inset-right,0px))}
+dialog{max-height:calc(var(--visual-viewport-height,90vh) - 24px)}
+#toast{bottom:calc(var(--bottom-nav-height) + 12px);z-index:14}

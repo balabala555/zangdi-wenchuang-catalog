@@ -75,3 +75,5 @@ export function drawPhoto(ctx, image, x, y, width, height) {
   const w=image.naturalWidth*scale,h=image.naturalHeight*scale;
   ctx.drawImage(image,x+(width-w)/2,y+(height-h)/2,w,h);
 }
+
+export function photoDimensions(path,size='card'){const p=optimizedPhotos[path]||homepagePhotos[path],rendition=p?.[size];return rendition?{width:rendition.width,height:rendition.height}:null;}

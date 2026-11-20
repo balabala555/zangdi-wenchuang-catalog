@@ -1,7 +1,7 @@
 import {homeConfig,categoryMatches} from './homepage.js';
 import {releaseInfo} from './version.js';
 import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,loadPageWatermark,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
-import {photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
+import {photoDimensions,photoSrcset,preloadPhotos,photoUrl,photoPath,publicPhotos,productGallery,cartPhoto,loadPhoto,drawPhoto} from './images.js';
 import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
 const $=s=>document.querySelector(s);
@@ -9,6 +9,7 @@ function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&am
 validateBrand();
 document.documentElement.style.setProperty('--page-brand-opacity',brandConfig.pageWatermark.opacity);
 loadPageWatermark().then(svg=>document.documentElement.style.setProperty('--page-brand-watermark','url("data:image/svg+xml,'+encodeURIComponent(svg)+'")')).catch(error=>console.warn('网页品牌水印加载失败：'+error.message));
+document.documentElement.dataset.revision=releaseInfo.revision||'';
 document.title=brandConfig.name+' · 藏地选物';
 if($('.release-version'))$('.release-version').textContent='测试版 v'+releaseInfo.version+' · VI '+releaseInfo.viVersion;
 for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild && !element.querySelector('img'))element.firstChild.textContent=brandConfig.name;
@@ -17,11 +18,18 @@ if($('.header-note'))$('.header-note').textContent=brandConfig.subtitle;
 if(brandConfig.assets?.enabled){
   for(const [element,key] of [[$('.brand'),'logo-color'],[$('footer>span'),'logo-color']]){
     if(!element)continue;
-    const image=document.createElement('img');image.className='brand-logo';image.alt=brandConfig.name+' · '+brandConfig.subtitle;image.width=1220;image.height=580;image.decoding='async';
+    let image=element.querySelector('img.brand-logo');const existing=!!image;
+    if(!image){image=document.createElement('img');image.className='brand-logo';}
+    image.alt=brandConfig.name+' · '+brandConfig.subtitle;image.width=1220;image.height=580;image.decoding='async';image.loading=element.matches('.brand')?'eager':'lazy';
+    if(element.matches('.brand'))image.setAttribute('fetchpriority','high');
     let surface=element,background='';
     while(surface){background=getComputedStyle(surface).backgroundColor;if(background!=='rgba(0, 0, 0, 0)' && background!=='transparent')break;surface=surface.parentElement;}
     const rgb=background.match(/[\d.]+/g);const dark=rgb && (Number(rgb[0])*0.2126+Number(rgb[1])*0.7152+Number(rgb[2])*0.0722)<128;
-    image.src=brandAssetUrl(dark?'logo-on-dark':key);element.replaceChildren(image);element.setAttribute('aria-label',brandConfig.name+'首页');
+    const target=brandAssetUrl(dark?'logo-on-dark':key);
+    if(!existing){image.src=target;element.replaceChildren(image);}
+    else if(image.src!==new URL(target,document.baseURI).href){const replacement=new Image();replacement.src=target;replacement.decode().then(()=>{image.src=target;}).catch(()=>console.warn('品牌图片未能切换，保留已有标识'));}
+    if(image.complete && !image.naturalWidth)image.alt=brandConfig.name;
+    element.setAttribute('aria-label',brandConfig.name+'首页');
   }
 }else if($('.brand .seal'))$('.brand .seal').innerHTML=mountainSvg();
 function brandQrUrl(path){return typeof embeddedBrandQrs!=='undefined' && embeddedBrandQrs[path] || './'+path;}
@@ -60,14 +68,18 @@ function imageMarkup(p, className='', photo=photoPath(p.coverImage) || publicPho
   const srcset=size==='thumb'?'':photoSrcset(path,size);
   return `<div class="photo-frame ${className}"><img data-fallback="${photoUrl(path,'original')}" src="${photoUrl(path,size)}" ${srcset?`srcset="${srcset}" sizes="${className==='detail-image'?'(max-width:760px) 100vw, 425px':'(max-width:760px) 45vw, 400px'}"`:''} alt="${escapeHTML(p.name)}" loading="${className?'eager':'lazy'}" decoding="async">${placeholder}</div>`;
 }
+const failedHomeImages=new Set();
+window.addEventListener('online',()=>{for(const img of failedHomeImages){if(!img.isConnected)continue;const frame=img.closest('.home-category,.home-feature,.hero-art,#store-photo')||img.parentElement;frame.classList.remove('image-failed');img.hidden=false;img.src=img.dataset.retryPhoto;delete img.dataset.retryPhoto;}failedHomeImages.clear();});
 // A failed real-image request falls back to a labelled placeholder without a broken icon.
 document.addEventListener('error',e=>{
   if(!(e.target instanceof HTMLImageElement))return;
   const img=e.target,fallback=img.dataset.fallback;
+  if(img.classList.contains('brand-logo')){img.hidden=false;img.alt=brandConfig.name;return;}
   if(fallback && new URL(fallback,document.baseURI).href!==img.src){
     delete img.dataset.fallback;img.parentElement.querySelectorAll('source').forEach(source=>source.remove());img.removeAttribute('srcset');img.src=fallback;return;
   }
-  img.hidden=true;img.parentElement.classList.add('image-failed');
+  img.hidden=true;const frame=img.closest('.home-category,.home-feature,.hero-art,#store-photo')||img.parentElement;frame.classList.add('image-failed');
+  if(img.classList.contains('home-photo') && !img.dataset.retriedOnline){img.dataset.retryPhoto=img.src;img.dataset.retriedOnline='1';if(failedHomeImages.size<12)failedHomeImages.add(img);}
 },true);
 let cart=[];
 try {cart=sanitizeCart(JSON.parse(localStorage.getItem('shan-cart')||'[]'));} catch {}
@@ -209,7 +221,8 @@ for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener(
 renderProducts();updateCount();
 
 function homeImage(path,alt,{hero=false}={}){
- const img=`<img class="home-photo" src="${photoUrl(path,hero?'detail':'card')}" srcset="${photoSrcset(path,hero?'detail':'card')}" sizes="${hero?'(max-width:760px) 94vw, 1120px':'(max-width:760px) 31vw, 340px'}" alt="${escapeHTML(alt)}" loading="${hero?'eager':'lazy'}" ${hero?'fetchpriority="high"':''} decoding="async" data-fallback="${photoUrl(path,'original')}">`;
+ const dims=photoDimensions(path,hero?'detail':'card');
+ const img=`<img ${dims?`width="${dims.width}" height="${dims.height}"`:''} class="home-photo" src="${photoUrl(path,hero?'detail':'card')}" srcset="${photoSrcset(path,hero?'detail':'card')}" sizes="${hero?'(max-width:760px) 94vw, 1120px':'(max-width:760px) 31vw, 340px'}" alt="${escapeHTML(alt)}" loading="${hero?'eager':'lazy'}" ${hero?'fetchpriority="high"':''} decoding="async" data-fallback="${photoUrl(path,'original')}">`;
  // Cap phone hero bandwidth even on high-DPR screens; gallery detail remains full resolution.
  return hero?`<picture><source media="(max-width:760px)" srcset="${photoUrl(path,'card')}">${img}</picture>`:img;
 }
@@ -226,3 +239,18 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-open-store]')){$('#store-photo').innerHTML=homeImage(homeConfig.storefront,'拉萨门店门头实拍',{hero:true});$('#store-dialog').showModal();}
 });
 $('#store-dialog').addEventListener('click',e=>{if(e.target===$('#store-dialog')||e.target.closest('[data-close]'))$('#store-dialog').close();if(e.target.closest('[data-store-contact]')){$('#store-dialog').close();openContacts();}});
+
+// Reserve the measured fixed navigation footprint, including iPhone safe area.
+let viewportFrame=0;
+function syncViewport(){
+ const root=document.documentElement,nav=document.querySelector('.bottom-nav');
+ const values={'--visual-viewport-height':Math.round(window.visualViewport?.height||innerHeight)+'px','--bottom-nav-height':Math.ceil(nav?.getBoundingClientRect().height||50)+'px'};
+ for(const [key,value]of Object.entries(values))if(root.style.getPropertyValue(key)!==value)root.style.setProperty(key,value);
+}
+function scheduleViewport(){if(viewportFrame)return;viewportFrame=requestAnimationFrame(()=>{viewportFrame=0;syncViewport();});}
+window.addEventListener('resize',scheduleViewport,{passive:true});
+window.visualViewport?.addEventListener('resize',scheduleViewport,{passive:true});
+window.visualViewport?.addEventListener('scroll',scheduleViewport,{passive:true});
+const bottomNav=document.querySelector('.bottom-nav');
+if(typeof ResizeObserver!=='undefined' && bottomNav){const observer=new ResizeObserver(scheduleViewport);try{observer.observe(bottomNav,{box:'border-box'});}catch{observer.observe(bottomNav);}}
+syncViewport();

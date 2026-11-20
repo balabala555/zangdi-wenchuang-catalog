@@ -14,7 +14,8 @@
     "prebuild": "npm run images && npm run verify:release",
     "audit:images": "node scripts/audit-public-images.mjs",
     "verify:release": "node scripts/verify-release.mjs",
-    "check": "npm run verify:release && npm test && npm run build"
+    "check": "npm run verify:release && npm test && npm run build",
+    "doctor:images": "node scripts/doctor-images.mjs"
   },
   "engines": {
     "node": ">=20.9.0"

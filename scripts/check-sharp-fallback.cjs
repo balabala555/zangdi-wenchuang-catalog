@@ -19,5 +19,12 @@ Module._load=function(request,...rest){
   const glyphImage=await sharp(artwork).png().toBuffer();
   if(!(await sharp(glyphImage).metadata()).width)throw new Error('Three-layer glyph SVG not rendered by WASM');
  }
+ const {redactHero,rectifyHero,heroCrop}=await import('./hero-refinement.mjs');
+ const synthetic=await sharp({create:{width:48,height:36,channels:3,background:'#ae9875'}}).png().toBuffer();
+ const masked=await redactHero(sharp,synthetic,[{left:5,top:5,width:10,height:10}],3);
+ const geometry={sourceQuad:[[0,0],[1,0],[1,1],[0,1]],width:48,height:36,whiteBalance:[1,1,1.004],brightness:1.025,sharpenSigma:.35,centerY:.5,ratios:{detail:2.15}};
+ const rectified=await rectifyHero(sharp,masked,geometry);
+ const final=await sharp(rectified).extract(heroCrop(48,36,geometry,'detail')).webp({quality:86}).toBuffer();
+ if(!(await sharp(final).metadata()).width)throw new Error('WASM hero correction/privacy/encoding failed');
  console.log('PASS official sharp WASM fallback: native modules unavailable; Chinese PNG overlay, ICC, WebP encode/decode work without OS fonts.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
