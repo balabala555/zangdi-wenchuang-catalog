@@ -1,3 +1,4 @@
+import {checkCatalogue,upgradeWatermarks} from './catalog-check.mjs';
 import {recordFailure} from './diagnostics.mjs';
 import {PhotoLibrary,assetPattern} from './assets.mjs';
 import {ArchiveService} from './archive.mjs';
@@ -42,19 +43,21 @@ export function createAdminServer({dataDir=defaultDataDir()}={}){
    const cookie=String(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('zangdi_admin='))?.slice(13);
    if(!equal(cookie,session))return send(401,{error:'请从本机管理台首页重新打开，未修改商品资料'});
    if(req.method==='GET'&&pathname==='/media'){let file=url.searchParams.get('path');if(assetPattern.test(file||'')){if(url.searchParams.get('size')==='original')return send(403,{error:'原图仅私有保存，可通过完整备份导出，不提供展示访问'});const bytes=photos.media(file,url.searchParams.get('size'));res.writeHead(200,{'Content-Type':'image/webp'});return res.end(bytes);}if(!media.has(file))return send(404,{error:'只能查看已验证的受保护商品照片'});const size=url.searchParams.get('size');if(['thumb','detail'].includes(size)&&optimizedPhotos[file])file=optimizedPhotos[file][size].path;const bytes=fs.readFileSync(archives.legacyFile(file));if(createHash('sha256').update(bytes).digest('hex')!==media.get(file))return send(409,{error:'图片保护校验失败，未展示未验证图片'});res.writeHead(200,{'Content-Type':file.endsWith('.webp')?'image/webp':file.endsWith('.png')?'image/png':'image/jpeg'});return res.end(bytes);}
-   if(req.method==='GET'&&pathname==='/api/session')return send(200,{csrf,siteName:siteConfig.name,brandName:brandConfig.name,version:releaseInfo.version,adminPatch:releaseInfo.adminPatch,revision:releaseInfo.revision,categories,modernCategories,statuses,dataDir:store.dir,contacts:(Array.isArray(brandConfig.customerServices)?brandConfig.customerServices:[]).map(s=>s?.wechatId).filter(id=>typeof id==='string'&&id.trim()),phase:'第二阶段：本地照片与完整备份；未连接顾客网站',lastCategory:(()=>{try{return store.read().preferences?.lastCategory;}catch{return null;}})()});
+   if(req.method==='GET'&&pathname==='/api/session')return send(200,{csrf,siteName:siteConfig.name,brandName:brandConfig.name,version:releaseInfo.version,adminPatch:releaseInfo.adminPatch,revision:releaseInfo.revision,categories,modernCategories,statuses,dataDir:store.dir,contacts:(Array.isArray(brandConfig.customerServices)?brandConfig.customerServices:[]).map(s=>s?.wechatId).filter(id=>typeof id==='string'&&id.trim()),phase:'商品管理完善版；仅保存本机，未连接顾客网站',lastCategory:(()=>{try{return store.read().preferences?.lastCategory;}catch{return null;}})()});
    if(req.method==='GET'&&pathname==='/api/catalog')return send(200,{catalog:store.read(),fingerprint:store.fingerprint()});
+   if(req.method==='GET'&&pathname==='/api/preflight')return send(200,checkCatalogue(store,photos,archives));
    if(req.method==='GET'&&pathname==='/api/backups')return send(200,{...store.list(),fingerprint:store.fingerprint()});
    if(req.method==='GET'&&pathname==='/api/backup/download'){const backup=store.download();res.setHeader('Content-Disposition','attachment; filename="catalog-backup-'+Date.now()+'.json"');return send(200,backup);}
    if(req.method==='GET'&&pathname==='/api/backup/full/list')return send(200,{files:fs.readdirSync(path.join(store.dir,'backups')).filter(f=>/^[a-f0-9-]{36}\.zip$/.test(f)).map(f=>({id:f.slice(0,-4),bytes:fs.statSync(path.join(store.dir,'backups',f)).size,time:fs.statSync(path.join(store.dir,'backups',f)).mtime.toISOString()})).sort((a,b)=>b.time.localeCompare(a.time))});
    if(req.method==='GET'&&pathname==='/api/photos')return send(200,{assets:photos.list().map(m=>({ref:m.id,name:m.originalName})),coverage:archives.coverage()});
    if(req.method==='GET'&&pathname.startsWith('/api/backup/jobs/')){const job=archives.jobs.get(pathname.split('/').pop());return job?send(200,job):send(404,{error:'备份任务不存在'});}
    if(req.method==='GET'&&pathname.startsWith('/api/backup/full/download/')){const id=pathname.split('/').pop(),job=archives.jobs.get(id);if(!/^[a-f0-9-]{36}$/.test(id)||!fs.existsSync(path.join(store.dir,'backups',id+'.zip')))return send(404,{error:'备份尚未生成成功'});res.writeHead(200,{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="zangdi-full-backup-'+(job?.revision||'saved')+'.zip"'});return fs.createReadStream(path.join(store.dir,'backups',id+'.zip')).pipe(res);}
+   if(req.method==='GET'&&pathname==='/api/backup/baseline141'){const file=path.join(store.dir,'upgrade-1.4.1','catalog-before.json');if(!fs.existsSync(file))return send(404,{error:'尚未产生V1.4.1升级前资料基线；首次更改前自动生成'});res.setHeader('Content-Disposition','attachment; filename="catalog-before-1.4.1.json"');res.writeHead(200,{'Content-Type':'application/json'});return res.end(fs.readFileSync(file));}
    if(req.method==='GET'&&pathname==='/api/backup/phase1'){const file=path.join(store.dir,'phase2-upgrade','catalog-before.json');if(!fs.existsSync(file))return send(404,{error:'尚未产生升级前基线'});res.setHeader('Content-Disposition','attachment; filename="catalog-before-phase2.json"');res.writeHead(200,{'Content-Type':'application/json'});return res.end(fs.readFileSync(file));}
    if(req.method!=='POST')return send(404,{error:'没有这个管理入口'});
    if(req.headers.origin!==origin||!equal(req.headers['x-csrf-token'],csrf))return send(403,{error:'管理确认已失效，请刷新后重试；未修改商品资料'});
    if(pathname==='/api/photo/upload'||pathname==='/api/backup/full/check'){
-    if(pathname==='/api/photo/upload'){operation='photo-baseline';store.preparePhase2();operation='photo-receive';}const temp=path.join(store.dir,'incoming',randomUUID()+'.upload'),limit=pathname==='/api/photo/upload'?25*1024**2:8*1024**3;let size=0;
+    if(pathname==='/api/photo/upload'){operation='photo-baseline';store.prepare141();store.preparePhase2();operation='photo-receive';}const temp=path.join(store.dir,'incoming',randomUUID()+'.upload'),limit=pathname==='/api/photo/upload'?25*1024**2:8*1024**3;let size=0;
     try{await pipeline(req,new Transform({transform(chunk,_,next){size+=chunk.length;if(size>limit)return next(new StoreError(413,'文件超过允许大小'));next(null,chunk);}}),fs.createWriteStream(temp,{flags:'wx',mode:0o600}));
      if(pathname==='/api/photo/upload'){const result=await photos.upload(temp,decodeURIComponent(String(req.headers['x-file-name']||'照片')));return send(200,{ref:result.ref,name:result.meta.originalName,reused:result.reused});}
      return send(200,await archives.check(temp));
@@ -64,6 +67,8 @@ export function createAdminServer({dataDir=defaultDataDir()}={}){
    let body;try{body=JSON.parse(Buffer.concat(chunks));}catch{throw new StoreError(400,'请求格式不正确');}if(!body||typeof body!=='object'||Array.isArray(body))throw new StoreError(400,'请求格式不正确');
    let result;
    if(pathname==='/api/product/save'){operation='product-validate';if(!body.product||typeof body.product!=='object'||Array.isArray(body.product))throw new StoreError(400,'商品资料格式不正确');store.preparePhase2();if(body.product.photos){const p=body.product.photos;photos.validateRefs([p.cover,...(p.common||[]),...Object.values(p.variants||{}).flat()].filter(Boolean));}operation='product-snapshot';result=store.save(body.product,body.id||null,body.revision);}
+   else if(pathname==='/api/product/action'){result=store.action(body);}
+   else if(pathname==='/api/photos/upgrade'){const value=await upgradeWatermarks(store,photos,archives,body);return send(200,{...value,fingerprint:store.fingerprint(),message:'已备份并从私有原图生成分布式保护图，原文件保留，未发布。'});}
    else if(pathname==='/api/product/status'){store.preparePhase2();result=store.setStatus(body.id,body.status,body.revision);}
    else if(pathname==='/api/backup/full'){return send(200,archives.start(body.revision));}
    else if(pathname==='/api/backup/full/restore'){result=await archives.restore(body);}
@@ -81,7 +86,7 @@ export async function startAdmin({dataDir=defaultDataDir(),port=3100,open=true}=
  try{await new Promise((resolve,reject)=>{app.server.once('error',reject);app.server.listen(port,'127.0.0.1',resolve);});}
  catch(error){if(error.code==='EADDRINUSE')throw Error('3100管理端口已被占用。若管理台已经打开，请继续使用原窗口；否则关闭原管理窗口后重试。顾客网站3000端口不受影响。');throw error;}
  const address='http://127.0.0.1:'+app.server.address().port+'/#'+app.launchToken;
- console.log(brandConfig.name+' V'+releaseInfo.version+' 本地商品管理·第二阶段 · '+(releaseInfo.adminPatch||'')+'\n管理入口：'+address+'\n私有商品库：'+app.store.dir+'\n仅本机访问；此随机授权入口仅本次启动有效，请勿转发。保存不发布。关闭管理台服务请在本窗口按Ctrl+C。');
+ console.log(brandConfig.name+' V'+releaseInfo.version+' 本地商品管理 · '+(releaseInfo.adminPatch||'')+'\n管理入口：'+address+'\n私有商品库：'+app.store.dir+'\n仅本机访问；此随机授权入口仅本次启动有效，请勿转发。保存不发布。关闭管理台服务请在本窗口按Ctrl+C。');
  if(open&&process.platform==='win32')spawn('explorer.exe',[address],{stdio:'ignore',detached:true}).on('error',()=>{}).unref();return app;
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))startAdmin().catch(error=>{console.error(error.message);process.exitCode=1;});
