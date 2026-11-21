@@ -19,7 +19,7 @@ export const homeSources=Object.fromEntries([homeConfig.hero,homeConfig.storefro
  crop:path.endsWith('/jewelry.jpg')?[.77,.16,.23,.56]:null,
 }]));
 // Mall original is preserved as PNG; the private .jpg pipeline alias has identical bytes.
-homeSources['public/images/stores/barkhor-mall.jpg']={masks:[],refinement:null,crop:[0,290/1447,1,560/1447]};
+homeSources['public/images/stores/barkhor-mall.jpg']={masks:[],refinement:null,crop:null};
 export function categoryMatches(product,category){
  if(category==='全部好物')return true;
  return product.category===category || !!homeConfig.categories.find(c=>c.name===category)?.legacy.includes(product.category);

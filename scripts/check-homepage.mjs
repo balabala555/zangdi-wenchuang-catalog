@@ -14,7 +14,7 @@ try{
   await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--page-brand-watermark').includes('base64'));
   assert.equal(await page.locator('[data-home-category]').count(),7);assert.equal(await page.locator('[data-feature-product]').count(),2);
   assert.equal(await page.locator('.hero-placeholder').count(),0);
-  const heroBox=await page.locator('#home-hero-photo').boundingBox();assert.ok(Math.abs(heroBox.width/heroBox.height-(width>1000?2.15:1.94))<0.02);
+  const heroBox=await page.locator('#home-hero-photo').boundingBox();assert.ok(heroBox.width>0&&heroBox.height>0);assert.equal(await page.locator('#home-hero-photo img').evaluate(i=>getComputedStyle(i).objectFit),'contain');
   const labelsFit=await page.locator('.home-category').evaluateAll(cards=>cards.every(card=>card.querySelector('img').getBoundingClientRect().bottom<=card.querySelector('span').getBoundingClientRect().top));assert.ok(labelsFit,'Category labels must remain below their pictures');
   const perf=await page.evaluate(()=>({navigationMs:Math.round(performance.now()),devicePixelRatio:devicePixelRatio,heroBytes:performance.getEntriesByType('resource').filter(r=>r.initiatorType==='img' && r.name===document.querySelector('#home-hero-photo img').currentSrc).map(r=>r.encodedBodySize)[0],horizontalOverflow:document.documentElement.scrollWidth>innerWidth,external:performance.getEntriesByType('resource').filter(r=>!r.name.startsWith(location.origin)&&!r.name.startsWith('data:')).map(r=>r.name)}));
   assert.equal(perf.horizontalOverflow,false);assert.deepEqual(perf.external,[]);assert.ok(perf.heroBytes<500000,'Compressed hero budget must be under 500KB');metrics.push({device:name,...perf});

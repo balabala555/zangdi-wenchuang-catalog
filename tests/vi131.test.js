@@ -18,10 +18,9 @@ test('confirmed seven-piece regression totals 290 without data changes',()=>{
  assert.equal(siteConfig.customerMode,'equal');assert.equal(siteConfig.exportWatermark.angle,-25);assert.ok(exportLayout.photoWidth>105);assert.ok(exportLayout.photoHeight>120);
 });
 
-test('mall original gets its own compressed protected horizontal crop with the full duck sign',()=>{
+test('mall original gets its own compressed protected full-ratio photo with the full store scene',()=>{
  const path=siteConfig.stores[0].photo,p=homepagePhotos[path],crop=homeSources[path].crop;
  assert.equal(path,'public/images/stores/barkhor-mall.jpg');assert.equal(p.sourceSha256,'314386bed14fa416ecba8c7847ffe3c75f79deb26adce46a0e56c212f51b42bf');
- assert.deepEqual(p.layers,['brand-mark','distributed-protection']);assert.equal(crop[0],0);assert.equal(crop[2],1);
- assert.ok(crop[1]*1447<=310 && (crop[1]+crop[3])*1447>=675,'Full green sign and duck retained');
- assert.ok(Math.abs(p.card.width/p.card.height-1.94)<.02);assert.ok(p.card.bytes<150000);assert.ok(p.detail.bytes<500000);
+ assert.deepEqual(p.layers,['brand-mark','distributed-protection']);assert.equal(crop,null);
+ assert.ok(Math.abs(p.card.width/p.card.height-1087/1447)<.01);assert.ok(p.card.bytes<150000);assert.ok(p.detail.bytes<500000);
 });

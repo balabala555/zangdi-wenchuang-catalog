@@ -139,3 +139,18 @@ footer .site-name{display:block;margin-top:8px;line-height:1.6}.variants small{d
 .cart-photo img{position:relative;z-index:1;background:#e9e3d7}
 .cart-photo.image-loaded:not(.image-failed) .cart-photo-placeholder{display:none}
 .cart-photo.image-failed img{display:none}
+
+/* V1.3.2: full store scenes, without object-fit crop or image distortion. */
+#home-hero-photo{height:clamp(380px,65vh,720px);aspect-ratio:auto;background:var(--paper)}
+#home-hero-photo .store-photo-open{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:var(--paper);cursor:zoom-in}
+#home-hero-photo picture{display:block;width:100%;height:100%}
+#home-hero-photo img{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center}
+#store-viewer{width:min(1100px,96vw);max-width:96vw;max-height:calc(var(--visual-viewport-height,100vh) - 32px);overflow:auto;background:var(--paper)}
+.store-viewer-body{padding:48px 20px 24px}.store-viewer-body h2{font:24px/1.5 var(--serif);margin:0}
+#store-viewer-photo{position:relative;background:var(--paper)}
+#store-viewer-photo img{display:block;width:100%;height:auto;max-height:none;object-fit:contain}
+#store-viewer-photo.image-failed::after{content:'门店照片暂未加载，请关闭后重试';display:block;padding:60px 15px;color:var(--muted);text-align:center}
+#store-viewer .close{position:sticky;top:8px;float:right;margin:8px;z-index:3;background:var(--paper)}
+@media(max-width:760px){#home-hero-photo{height:auto;aspect-ratio:var(--store-photo-ratio,3 / 4);min-height:0}.store-viewer-body{padding:30px 12px 18px}.store-viewer-body h2{font-size:20px}}
+
+#home-hero-photo.image-failed::after{pointer-events:none}
