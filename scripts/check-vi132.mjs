@@ -5,7 +5,7 @@ import {siteConfig} from '../src/site.js';
 import {photoDimensions,photoUrl} from '../src/images.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
-const out='docs/screenshots/v1.3.2';await mkdir(out,{recursive:true});
+const out=process.env.STORE_SCREENSHOTS||'docs/screenshots/v1.3.2';await mkdir(out,{recursive:true});
 try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});const origin=`http://127.0.0.1:${server.address().port}`;
  for(const [device,width,height]of [['mobile',390,844],['desktop',1440,1000],['offline',390,844]]){

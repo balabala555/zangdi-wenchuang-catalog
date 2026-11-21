@@ -7,7 +7,7 @@ import {cartPhoto,photoUrl} from '../src/images.js';
 import {exportLayout} from '../src/export.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const rows=[['felt-mushroom-bag',2],['soft-lamb',3],['rainbow-lamb',2]].map(([id,quantity])=>({id,variant:products.find(p=>p.id===id).variants[0],quantity}));
-const out='docs/screenshots/v'+releaseInfo.version;await mkdir(out,{recursive:true});
+const out=process.env.CART_SCREENSHOTS||'docs/screenshots/v'+releaseInfo.version;await mkdir(out,{recursive:true});
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
 try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});const origin=`http://127.0.0.1:${server.address().port}`;

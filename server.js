@@ -1,5 +1,5 @@
 import http from 'node:http';
-import {createHash} from 'node:crypto';
+import {createHash,timingSafeEqual} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -8,14 +8,24 @@ import {optimizedPhotos} from './src/generated-images.js';
 import {buildPreview} from './build.js';
 const root=path.dirname(fileURLToPath(import.meta.url));
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
-export function createServer({basePath='/'}={}){
+export function createServer({basePath='/',management=null}={}){
   const base='/'+basePath.split('/').filter(Boolean).join('/');
   const prefix=base==='/'?'':base;
   const immutablePhotos=new Set([...Object.values(optimizedPhotos),...Object.values(homepagePhotos)].flatMap(entry=>['thumb','card','detail'].map(size=>'/'+entry[size].path)));
-  return http.createServer(async(req,res)=>{
+  const server=http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost');
       let pathname=decodeURIComponent(url.pathname);
+      if(pathname==='/.catalog-control'||pathname==='/.catalog-control/stop'){
+        const actual=Buffer.from(String(req.headers['x-catalog-token']||'')),expected=Buffer.from(management?.token||'');
+        const loopback=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
+        if(!management||!loopback||req.headers.origin||actual.length!==expected.length||!timingSafeEqual(actual,expected)){res.writeHead(404);return res.end('Not found');}
+        res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json');
+        if(pathname.endsWith('/stop')&&req.method==='POST'){res.end(JSON.stringify({stopping:true}),()=>{server.close();server.closeAllConnections();});return;}
+        if(pathname==='/.catalog-control'&&req.method==='GET')return res.end(JSON.stringify({root,version:management.version,pid:process.pid}));
+        res.writeHead(405);return res.end();
+      }
+
       if(prefix && pathname===prefix){res.writeHead(308,{Location:prefix+'/'+url.search});return res.end();}
       if(prefix){if(!pathname.startsWith(prefix+'/')){res.writeHead(404);return res.end('Not found');}pathname=pathname.slice(prefix.length);}
       if(!['GET','HEAD'].includes(req.method)){res.writeHead(405,{Allow:'GET, HEAD'});return res.end();}
@@ -39,8 +49,9 @@ export function createServer({basePath='/'}={}){
       res.end(req.method==='HEAD'?undefined:body);
     }catch{res.writeHead(404);res.end('Not found');}
   });
+  return server;
 }
 if(process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const port=Number(process.env.PORT||3000),basePath=process.env.BASE_PATH||'/';
-  createServer({basePath}).listen(port,'0.0.0.0',()=>console.log(`Catalog running on port ${port}, base path ${basePath}`));
+  createServer({basePath,management:process.env.CATALOG_PREVIEW_TOKEN?{token:process.env.CATALOG_PREVIEW_TOKEN,version:process.env.CATALOG_PREVIEW_VERSION}:null}).listen(port,'0.0.0.0',()=>console.log(`Catalog running on port ${port}, base path ${basePath}`));
 }
