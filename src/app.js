@@ -1,3 +1,4 @@
+import {exportLayout,loadExportMark,paintExportBackground,protectExportText} from './export.js';
 import {siteConfig,storeLines,onlineServices,validateSite} from './site.js';
 import {homeConfig,categoryMatches} from './homepage.js';
 import {releaseInfo} from './version.js';
@@ -141,9 +142,23 @@ $('#detail').addEventListener('click',e=>{
   if(d){quantity=Math.max(1,Math.min(99,quantity+Number(d.dataset.delta)));const buttons=$('#detail .quantity').querySelectorAll('button');$('#detail .quantity span').textContent=quantity;buttons[0].disabled=quantity===1;buttons[1].disabled=quantity===99;}
   if(e.target.closest('#add-cart')||e.target.closest('#add-more')){const old=cart.find(i=>i.id===selected.id&&i.variant===variant);if(old)old.quantity=Math.min(99,old.quantity+quantity);else cart.push({id:selected.id,variant,quantity});save();if(e.target.closest('#add-more')){quantity=1;renderDetail();$('#detail .variants [aria-pressed=true]')?.focus({preventScroll:true});toast('此款已加入，可继续选择其他款式');}else{$('#detail').close();toast('已加入清单，喜欢的好物已为你记下');}}
 });
+function cartThumbnail(p,variant){
+ const path=cartPhoto(p,variant);
+ const placeholder='<span class="cart-photo-placeholder" role="img" aria-label="实拍图暂未加载">实拍图暂未加载</span>';
+ return `<div class="photo-frame list-thumbnail cart-photo${path?'':' image-failed'}">${path?`<img src="${photoUrl(path,'thumb')}" data-fallback="${photoUrl(path,'original')}" alt="${escapeHTML(p.name)} · ${escapeHTML(variant||'商品主图')}" loading="eager" decoding="async" width="88" height="112">`:''}${placeholder}</div>`;
+}
+function watchCartPhotos(){
+ for(const img of document.querySelectorAll('.cart-photo img')){
+  const frame=img.parentElement;
+  const loaded=()=>img.decode().then(()=>{img.hidden=false;frame.classList.remove('image-failed');frame.classList.add('image-loaded');}).catch(()=>img.dispatchEvent(new Event('error')));
+  img.addEventListener('load',loaded);if(img.complete && img.naturalWidth)loaded();
+  setTimeout(()=>{if(frame.isConnected && !frame.classList.contains('image-loaded')){img.hidden=true;frame.classList.add('image-failed');}},8000);
+ }
+}
 function renderList(){
   clearExport();
-  $('#list-dialog').innerHTML=`<div class="list-content"><button class="close" data-close aria-label="关闭选购清单">×</button><p class="eyebrow">YOUR LITTLE COLLECTION</p><h2 id="list-title">我的选购清单</h2><p class="small-note">先收集喜欢，再与店主确认。清单仅保存在当前浏览器。</p>${cart.length?cart.map((i,index)=>{const p=products.find(p=>p.id===i.id);return `<article class="list-item">${imageMarkup(p,'list-thumbnail',cartPhoto(p,i.variant))}<div class="list-item-info"><h3>${p.name}</h3><p>${i.variant} · ¥${p.price.toFixed(2)} / ${p.unit || '件'}</p><div class="quantity"><button data-index="${index}" data-change="-1" aria-label="减少${p.name}数量" ${i.quantity===1?'disabled':''}>−</button><span>${i.quantity}</span><button data-index="${index}" data-change="1" aria-label="增加${p.name}数量" ${i.quantity===99?'disabled':''}>+</button></div><button class="remove" data-remove="${index}">移除</button></div><span class="price">¥${p.price*i.quantity}</span></article>`;}).join('')+`<div class="list-total"><span>参考合计</span><strong>¥ ${total(cart).toFixed(2)}</strong></div><p class="small-note">不含运费；库存、运费与成交价格请联系店主确认。清单仅为选购意向。</p><div class="list-actions"><button class="primary" id="export-image">分享／保存图片清单</button><button class="secondary" id="copy-list">复制文字清单</button></div><p class="small-note">生成图片后可分享给微信客服，或下载、长按图片保存。</p>`:'<div class="empty">清单还是空的。<br>去挑一件让你心动的好物吧。<br><button class="secondary" data-close>继续逛逛</button></div>'}</div>`;
+  $('#list-dialog').innerHTML=`<div class="list-content"><button class="close" data-close aria-label="关闭选购清单">×</button><p class="eyebrow">YOUR LITTLE COLLECTION</p><h2 id="list-title">我的选购清单</h2><p class="small-note">先收集喜欢，再与店主确认。清单仅保存在当前浏览器。</p>${cart.length?cart.map((i,index)=>{const p=products.find(p=>p.id===i.id);return `<article class="list-item">${cartThumbnail(p,i.variant)}<div class="list-item-info"><h3>${p.name}</h3><p>${i.variant} · ¥${p.price.toFixed(2)} / ${p.unit || '件'}</p><div class="quantity"><button data-index="${index}" data-change="-1" aria-label="减少${p.name}数量" ${i.quantity===1?'disabled':''}>−</button><span>${i.quantity}</span><button data-index="${index}" data-change="1" aria-label="增加${p.name}数量" ${i.quantity===99?'disabled':''}>+</button></div><button class="remove" data-remove="${index}">移除</button></div><span class="price">¥${p.price*i.quantity}</span></article>`;}).join('')+`<div class="list-total"><span>参考合计</span><strong>¥ ${total(cart).toFixed(2)}</strong></div><p class="small-note">不含运费；库存、运费与成交价格请联系店主确认。清单仅为选购意向。</p><div class="list-actions"><button class="primary" id="export-image">分享／保存图片清单</button><button class="secondary" id="copy-list">复制文字清单</button></div><p class="small-note">生成图片后可分享给微信客服，或下载、长按图片保存。</p>`:'<div class="empty">清单还是空的。<br>去挑一件让你心动的好物吧。<br><button class="secondary" data-close>继续逛逛</button></div>'}</div>`;
+  watchCartPhotos();
 }
 $('#open-list').addEventListener('click',()=>{renderList();$('#list-dialog').showModal();});
 $('#list-dialog').addEventListener('click',async e=>{
@@ -191,15 +206,18 @@ async function exportImage(){
     }
     const qrImages=await loadBrandQrs();
     const footerArtwork=await loadBrandFooter();
+    const exportMark=await loadExportMark();
     await document.fonts.ready;
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(footerArtwork?900:qrImages.length?1500:1050)+exportCart.length*155;const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=siteConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(brandConfig.englishName+' / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
-    for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
-      if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,photos[index],50,y,105,120);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity} · 单价¥${p.price}/${p.unit||'件'}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
-    const y=230+exportCart.length*155;ctx.fillStyle='#343b32';ctx.font='26px sans-serif';ctx.fillText(`参考合计：¥${total(exportCart).toFixed(2)}`,50,y+30);ctx.fillStyle='#7e836f';ctx.font='17px sans-serif';ctx.fillText('请与店主确认库存、运费及最终价格。',50,y+80);ctx.fillText('图片仅供选款参考，本清单不包含支付功能。',50,y+110);
+    const canvas=document.createElement('canvas');canvas.width=exportLayout.width;canvas.height=(footerArtwork?1000:qrImages.length?1600:1150)+exportCart.length*exportLayout.rowHeight;const ctx=canvas.getContext('2d');
+    paintExportBackground(ctx,canvas.width,canvas.height,exportMark);protectExportText(ctx);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=siteConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(brandConfig.englishName+' / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
+    for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=exportLayout.photoY+index*exportLayout.rowHeight;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,exportLayout.photoWidth,exportLayout.photoHeight);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
+      if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,exportLayout.photoWidth,exportLayout.photoHeight);drawPhoto(ctx,photos[index],50,y,exportLayout.photoWidth,exportLayout.photoHeight);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,exportLayout.textX,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity} · 单价¥${p.price}/${p.unit||'件'}`,exportLayout.textX,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,750,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+180);ctx.lineTo(850,y+180);ctx.stroke();}
+    const y=230+exportCart.length*exportLayout.rowHeight;ctx.fillStyle='#343b32';ctx.font='26px sans-serif';ctx.fillText(`参考合计：¥${total(exportCart).toFixed(2)}`,50,y+30);ctx.fillStyle='#7e836f';ctx.font='17px sans-serif';ctx.fillText('请与店主确认库存、运费及最终价格。',50,y+80);ctx.fillText('图片仅供选款参考，本清单不包含支付功能。',50,y+110);
     brandFooter(ctx,y,qrImages,brandConfig,footerArtwork);
-    ctx.fillStyle='#244d3e';ctx.font='20px sans-serif';let storeY=footerArtwork?y+415:y+830;
+    ctx.fillStyle='#244d3e';ctx.font='22px sans-serif';
+    brandConfig.customerServices.forEach((service,index)=>ctx.fillText(service.label+'微信：'+service.wechatId,50+index*410,footerArtwork?y+420:y+880));
+    ctx.fillStyle='#244d3e';ctx.font='20px sans-serif';let storeY=footerArtwork?y+480:y+930;
     for(const line of storeLines()){ctx.fillText(line,50,storeY);storeY+=31;}
     ctx.font='17px sans-serif';ctx.fillText(siteConfig.relationship,50,storeY+4);ctx.fillText(siteConfig.headline,50,storeY+34);
     ctx.fillText('两位线上客服均服务两家门店，添加不成功可联系另一位。',50,storeY+65);

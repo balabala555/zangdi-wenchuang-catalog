@@ -4,8 +4,8 @@ import {siteConfig,storeLines,onlineServices,validateSite} from '../src/site.js'
 import {brandConfig} from '../src/brand.js';
 import {products} from '../src/data.js';
 import {sanitizeCart,total,listText} from '../src/cart.js';
-test('confirmed site/store identity is exact; missing mall photo is never substituted',()=>{
- validateSite(siteConfig,brandConfig);assert.equal(siteConfig.name,'扎西德勒鸭·藏地选物');assert.equal(siteConfig.stores[0].photo,null);
+test('confirmed site/store identity is exact; each store uses its own real photo',()=>{
+ validateSite(siteConfig,brandConfig);assert.equal(siteConfig.name,'扎西德勒鸭·藏地选物');assert.equal(siteConfig.stores[0].photo,'public/images/stores/barkhor-mall.jpg');
  assert.deepEqual(storeLines(),['八廓商场店｜扎西德勒鸭','八廓街店｜加西得了个鸭']);assert.equal(siteConfig.stores[1].photo,'public/images/homepage/storefront.jpg');
  assert.equal(siteConfig.customerMode,'equal');assert.deepEqual(onlineServices(brandConfig).map(s=>s.wechatId),['15289007429','18673575510']);assert.equal(brandConfig.showWebsiteUrl,false);
 });

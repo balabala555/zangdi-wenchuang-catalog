@@ -13,7 +13,7 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 export async function buildPreview(){
   validateBrand();
   const read=file=>readFile(path.join(root,file),'utf8');
-  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/site.js','src/homepage.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/generated-homepage-images.js','src/images.js','src/app.js'].map(read));
+  const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/site.js','src/homepage.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/generated-homepage-images.js','src/images.js','src/export.js','src/app.js'].map(read));
   const paths=new Set([...Object.keys(homeSources),...products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()])].map(photoPath).filter(Boolean));
   const embeddedPhotos={};let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;

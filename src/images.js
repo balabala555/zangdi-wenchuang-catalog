@@ -17,7 +17,10 @@ export function productGallery(product, variant) {
     ? photoList(product.variantImages[variant]) : [];
   return {photos:[...new Set([...own,...common])], generic:!!variant && !own.length && !!common.length};
 }
-export function cartPhoto(product, variant) { return productGallery(product,variant).photos[0] || null; }
+export function cartPhoto(product, variant) {
+ const own=product.variants?.includes(variant)?photoList(product.variantImages?.[variant]):[];
+ return own[0] || photoPath(product.coverImage) || publicPhotos(product)[0] || null;
+}
 // Standalone previews embed one detail rendition per original; normal pages use size-specific files.
 export function photoUrl(path, size='detail') {
   if (!photoPath(path)) throw new Error('Invalid photo path');

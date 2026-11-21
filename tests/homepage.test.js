@@ -32,5 +32,5 @@ test('all homepage sizes are protected compressed derivatives; originals private
  }
 });
 test('homepage processing twice reuses protected outputs even without private originals',()=>{
- const before=readFileSync('src/generated-homepage-images.js','utf8');const result=execFileSync(process.execPath,['scripts/optimize-homepage.mjs'],{env:{...process.env,CATALOG_ORIGINALS_DIR:'/tmp/no-private-homepage-photos'},encoding:'utf8'});assert.ok(result.includes('9 unchanged entries reused'));assert.equal(readFileSync('src/generated-homepage-images.js','utf8'),before);
+ const before=readFileSync('src/generated-homepage-images.js','utf8');const result=execFileSync(process.execPath,['scripts/optimize-homepage.mjs'],{env:{...process.env,CATALOG_ORIGINALS_DIR:'/tmp/no-private-homepage-photos'},encoding:'utf8'});assert.ok(result.includes(Object.keys(homeSources).length+' unchanged entries reused'));assert.equal(readFileSync('src/generated-homepage-images.js','utf8'),before);
 });

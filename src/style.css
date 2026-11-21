@@ -132,3 +132,10 @@ footer .site-name{display:block;margin-top:8px;line-height:1.6}.variants small{d
 .small-note,.results-line{font-size:13px;line-height:1.7;color:var(--muted)}.eyebrow{font-size:12px;letter-spacing:1px}.demo-note{font-size:12px}footer p{font-size:13px;line-height:1.8}
 #store-dots button{border:1px solid var(--line);border-radius:8px;padding:7px 12px}#store-dots button b{display:block;font-weight:500;font-size:15px;line-height:1.5}#store-dots button small{display:block;font-size:13px;line-height:1.6}#store-dots [aria-pressed=true]{border-color:var(--accent);background:#e9eee7}
 @media(max-width:760px){.store-controls>button{display:none}#store-dots{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:10px}#store-dots button{justify-content:center;min-height:62px}.store-caption{font-size:17px}}
+
+/* V1.3.1 explicit cart boxes and visible loading/failure fallback. */
+.list-item>.photo-frame.cart-photo{position:relative;width:88px;height:112px;flex:0 0 88px;background:#e9e3d7;padding:0}
+.cart-photo-placeholder{display:grid;position:absolute;inset:0;place-items:center;padding:8px;text-align:center;font:12px/1.5 sans-serif;color:#70695c}
+.cart-photo img{position:relative;z-index:1;background:#e9e3d7}
+.cart-photo.image-loaded:not(.image-failed) .cart-photo-placeholder{display:none}
+.cart-photo.image-failed img{display:none}

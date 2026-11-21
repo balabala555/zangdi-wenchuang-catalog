@@ -452,5 +452,48 @@ export const homepagePhotos = {
       "bytes": 703623,
       "sha256": "0fad3ecf63bf71f565cf0e5ee5dbf211a5ae7b97383072466e71e3554c6f3dc6"
     }
+  },
+  "public/images/stores/barkhor-mall.jpg": {
+    "version": "homepage-vi1.1-private-masks-v1",
+    "recipe": "{\"version\":\"homepage-vi1.1-private-masks-v1\",\"sizes\":{\"thumb\":240,\"card\":640,\"detail\":1600},\"brand\":{\"name\":\"扎西德勒鸭\",\"englishName\":\"TIBETAN CRAFTS\",\"subtitle\":\"藏地风物 · 生活美学\",\"useRegisteredTrademark\":false,\"assets\":{\"enabled\":true,\"approvedFor\":\"扎西德勒鸭|TIBETAN CRAFTS|藏地风物 · 生活美学|15289007429|18673575510\",\"files\":{\"logo-color\":{\"path\":\"public/branding/logo-color.png\",\"sha256\":\"76baf12046905f904663d710cf29d4631e8fcc3e8720a3c90586f77499ab2721\"},\"logo-on-dark\":{\"path\":\"public/branding/logo-on-dark.png\",\"sha256\":\"13bf4755b4ab0d88149fbf4a863cad7c18a1a111c2e7299dfd749819617f8d24\"},\"watermark-dark\":{\"path\":\"public/branding/watermark-dark.png\",\"sha256\":\"3487edd6909251ed52856717aac93d6c35319d73e6248ab6fcdfa1880d40680e\"},\"watermark-light\":{\"path\":\"public/branding/watermark-light.png\",\"sha256\":\"87912d82ea2c6ad08f70088c9549e6db8cec70840163c98ef7ebd24e8e2e61a1\"},\"footer\":{\"path\":\"public/branding/footer.png\",\"sha256\":\"e9602569dacf057b61f5f6ccd497fe084692bbe68f45fa8a1502d55230c25266\"}}},\"customerServices\":[{\"label\":\"客服1\",\"wechatId\":\"15289007429\",\"qrCodePath\":\"public/branding/wechat-15289007429.jpg\"},{\"label\":\"客服2\",\"wechatId\":\"18673575510\",\"qrCodePath\":\"public/branding/wechat-18673575510.jpg\"}],\"websiteUrl\":\"\",\"showWebsiteUrl\":false,\"imageWatermark\":{\"opacity\":0.6,\"fontScale\":0.3,\"angle\":-25,\"adaptiveColor\":true,\"adaptiveThreshold\":0.65,\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#656557\",\"fontAssetPath\":\"assets/fonts/NotoSansCJKsc-Medium.woff2\",\"outlineRatio\":0.01,\"minOutlinePx\":0.22,\"letterSpacing\":0.025,\"contactSizeRatio\":0.72,\"maxWidthRatio\":0.22,\"maxHeightRatio\":0.13,\"positions\":[[0.77,0.18],[0.15,0.29],[0.34,0.43],[0.77,0.48],[0.015,0.56]]},\"brandVisual\":{\"fontAssetPath\":\"assets/fonts/NotoSerifCJKsc-Regular.woff2\",\"lightColor\":\"#f2e6c5\",\"darkColor\":\"#42483e\",\"letterSpacing\":0.12,\"mark\":{\"widthRatio\":0.3,\"leftRatio\":0.035,\"topRatio\":0.075,\"maxHeightRatio\":0.18,\"opacity\":0.95,\"nameSizeRatio\":0.16,\"englishSizeRatio\":0.055,\"subtitleSizeRatio\":0.065},\"footer\":{\"heightRatio\":0.21,\"minHeightWidthRatio\":0.28125,\"background\":\"#f7f3e9\",\"color\":\"#48483e\",\"opacity\":1,\"fontSizeRatio\":0.022,\"letterSpacing\":0.035,\"lineWidthRatio\":0.001,\"showQrCodes\":true,\"qrWidthRatio\":0.15,\"nameSizeRatio\":0.04,\"subtitleSizeRatio\":0.018,\"englishSizeRatio\":0.012},\"mountain\":{\"width\":214,\"height\":64,\"strokeWidth\":1.8,\"paths\":[[[0,60],[38,30],[55,39],[96,2],[148,48],[172,30],[214,61]],[[38,30],[55,50],[78,32]],[[96,2],[115,33],[98,25],[88,33]],[[172,30],[190,50]]]}},\"pageWatermark\":{\"opacity\":0.065,\"fontSize\":15,\"angle\":-25,\"color\":\"#69735c\"}},\"processing\":\"24698057b492e97c10222c7731e64fe2c79d82f7ed8fda60a0ec332180670ef4\",\"renderer\":\"080671129f6068f437033dc6aeedf785ffa894b4719f0cd1fce31e8d416e5a84\"}{\"masks\":[],\"refinement\":null,\"crop\":[0,0.20041465100207326,1,0.387007601935038]}",
+    "sourceSha256": "314386bed14fa416ecba8c7847ffe3c75f79deb26adce46a0e56c212f51b42bf",
+    "originalBytes": 2825945,
+    "privacyMasks": [],
+    "crop": [
+      0,
+      0.20041465100207326,
+      1,
+      0.387007601935038
+    ],
+    "layers": [
+      "brand-mark",
+      "distributed-protection"
+    ],
+    "thumb": {
+      "path": "public/images/optimized/5fdab8373f3628d521027cc8-home-thumb.webp",
+      "width": 240,
+      "height": 124,
+      "bytes": 12960,
+      "sha256": "5fdab8373f3628d521027cc81ac787332aa8174de1174c9764476cf2734a1726"
+    },
+    "card": {
+      "path": "public/images/optimized/0af341e152810b41a1ce8f6d-home-card.webp",
+      "width": 640,
+      "height": 330,
+      "bytes": 66354,
+      "sha256": "0af341e152810b41a1ce8f6dbe9c5d13d80a4442c219cfc2329b4c7cc5ffbb79"
+    },
+    "detail": {
+      "path": "public/images/optimized/c5f311ba0cbb7564781130e3-home-detail.webp",
+      "width": 1087,
+      "height": 560,
+      "bytes": 145404,
+      "sha256": "c5f311ba0cbb7564781130e30b6b0c2e44406ecefda1f83b78a3f2e51e5c31ea"
+    },
+    "public": {
+      "path": "public/images/stores/barkhor-mall.jpg",
+      "bytes": 254251,
+      "sha256": "a02d9b4a8b783201e3982020561936a4467f8e98822381beee5b2f5cf95950f1"
+    }
   }
 };
