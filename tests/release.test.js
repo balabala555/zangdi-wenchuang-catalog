@@ -4,7 +4,7 @@ import {verifyRelease} from '../scripts/verify-release.mjs';
 import {brandConfig,pageWatermarkSvg} from '../src/brand.js';
 import {releaseInfo} from '../src/version.js';
 import {optimizedPhotos} from '../src/generated-images.js';
-test('release gate preserves accepted VI, original QR files, products and all public renditions',async()=>{const result=await verifyRelease();assert.equal(result.version,'1.2.1');assert.equal(result.protectedAssets,7);});
+test('release gate preserves accepted VI, original QR files, products and all public renditions',async()=>{const result=await verifyRelease();assert.equal(result.version,'1.3.0');assert.equal(result.protectedAssets,7);});
 test('release gate rejects mismatched version, stale assets and old image recipes',async()=>{
  await assert.rejects(verifyRelease({release:{...releaseInfo,version:'0.1.0'}}));
  const config=structuredClone(brandConfig);config.assets.files.footer.sha256='0'.repeat(64);await assert.rejects(verifyRelease({config}));

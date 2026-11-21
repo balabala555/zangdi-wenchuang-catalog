@@ -1,7 +1,17 @@
 # zangdi-wenchuang-catalog
 藏地文创线上选物册｜面向微信私域顾客的文创商品展示、分类浏览、款式选择及图片选购清单系统。
 
-## 第一版原型：山间来信
+## 当前测试候选 V1.3.0（品牌 VI 1.1）
+
+基于已验证 V1.2.1 `a70e4a6`，专用分支 `test/vi-v1.3.0`；稳定测试分支与 main 保留。两位真实线上客服平等展示，网址按确认继续隐藏。八廓商场店真实照片仍待补充，首页明确占位，未以其他店铺冒充，因此尚不满足双店实景完整验收。
+
+- [交付报告及测试结果](docs/v1.3.0-delivery.md)
+- [Windows固定目录预览与恢复](docs/windows-preview-v1.3.0.md)：首次01配置，此后02启动、03更新；直接 Node 预览不需要安装 sharp。
+- `npm run check`：版本保护、50项测试、构建。VI浏览器专项：`node scripts/check-vi13.mjs`（另装开发验证用 Playwright，不是网站运行依赖）。
+
+下面保留历次开发记录；冲突时以本节、V1.3.0指南和最后的VI V1.1图片规则为准。
+
+## 开发方式
 
 使用原生 JavaScript ES Modules、响应式 CSS 和 Node.js 静态服务，无第三方运行依赖。需要 Node.js 20.9 或以上（推荐当前 LTS），首次运行先执行 `npm ci` 安装图片处理构建工具。
 
@@ -30,15 +40,9 @@ npm test
 - `server.js`：开发静态服务；正式部署可使用静态托管
 - `tests/cart.test.js`：清单和商品数据基础测试
 
-## 上传真实商品图片
+## 新增真实商品图片（当前规则）
 
-1. 将 JPG / PNG / WebP 图片放入 `public/images/`，建议英文文件名，例如 `mountain-bracelet.webp`。建议宽 1000–1400 像素、主体居中，单张尽量小于 500KB；首页按接近正方形裁切。
-2. 在 `src/data.js` 中找到商品，将 `image` 改为 `public/images/mountain-bracelet.webp`，同步修改名称、材质、尺寸、价格与 `variants`。保持 `id` 稳定以保留现有清单关联。
-3. 刷新页面检查商品卡片、详情和导出清单的图片。提交代码与图片后部署即可更新。这一版使用仓库文件管理图片，尚无后台上传入口，也没有每款独立图片。
-4. 首页目前也是文字占位区域。获得真实封面后，在 `index.html` 的 `.hero-art` 中替换占位内容，使用 `./public/images/实际文件名.webp`。上线前核实商品信息、调整演示提示。
-
-请使用自有或已获授权的商品图片。图片使用本站路径可避免跨域导致图片清单导出失败。正式上线前建议增加管理后台、真实库存、店主联系方式及隐私说明，并在 iOS / Android 微信内进行真机验证。
-
+无水印照片只放 `.private-originals/`，设计源文件只放 `.private-designs/`，不得直接放 public 或提交。按后文当前 V1.1 品牌处理规则配置源文件，运行图片生成器输出已压缩、永久嵌入水印的多尺寸图片，再维护商品数据；保持商品 id 及真实款式对应关系。不得自行推断商品资料或执行部署。
 
 ## 预览与资源加载排查
 
@@ -205,7 +209,7 @@ Windows 首次安装使用 `npm ci --include=optional`；新增官方 WASM 备�
 
 没有新增 npm 依赖、付费 API 或收费服务。未来新增商品：原照片保存到 `.private-originals/`，商品数据填写对应 `public/images/` 路径和款式关系，然后运行 `npm run images` 或 `npm run dev` / `npm run build`，自动完成品牌处理和分尺寸生成。不要把无水印照片直接放入 public；没有私有原图时仅允许复用校验通过的公开输出。旧历史仍有早期无水印原图，未自行清理。
 
-## 当前开发版本 1.1.1（VI 1.1）
+## 历史版本 1.1.1（VI 1.1）
 
 页脚、`src/version.js`、`package.json` 和锁文件统一版本。`npm run check` 执行版本保护、测试及构建；启动/构建会自动校验已验收素材、商品关系和公开图片。变更见 [CHANGELOG](CHANGELOG.md)，恢复节点、备份和边界见 [版本保护](docs/version-protection.md)，本轮状态与测试见 [开发报告](docs/release-1.1.1-report.md)。
 

@@ -12,11 +12,13 @@ import {releaseInfo} from '../src/version.js';
 import {homeSources} from '../src/homepage.js';
 import {homepagePhotos} from '../src/generated-homepage-images.js';
 import {products} from '../src/data.js';
+import {siteConfig,validateSite} from '../src/site.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const read=file=>readFile(path.join(root,file));
 export async function verifyRelease({config=brandConfig,manifest=optimizedPhotos,release=releaseInfo}={}){
  validateBrand(config);
+ validateSite(siteConfig,config);
  const baseline=JSON.parse(await read('config/accepted-baseline.json'));
  const pkg=JSON.parse(await read('package.json')),lock=JSON.parse(await read('package-lock.json'));
  assert.equal(pkg.version,release.version,'Package/release versions must agree');

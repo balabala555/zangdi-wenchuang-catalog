@@ -1,3 +1,4 @@
+import {siteConfig,storeLines,onlineServices,validateSite} from './site.js';
 import {homeConfig,categoryMatches} from './homepage.js';
 import {releaseInfo} from './version.js';
 import {brandConfig,validateBrand,brandFooter,loadBrandQrs,pageWatermarkSvg,loadPageWatermark,mountainSvg,brandAssetUrl,loadBrandFooter} from './brand.js';
@@ -6,14 +7,15 @@ import {categories,products} from './data.js';
 import {sanitizeCart,total,listText} from './cart.js';
 const $=s=>document.querySelector(s);
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-validateBrand();
-document.documentElement.style.setProperty('--page-brand-opacity',brandConfig.pageWatermark.opacity);
+validateBrand();validateSite(siteConfig,brandConfig);
+document.documentElement.style.setProperty('--page-brand-opacity',siteConfig.visual.pageWatermarkOpacity);
 loadPageWatermark().then(svg=>document.documentElement.style.setProperty('--page-brand-watermark','url("data:image/svg+xml,'+encodeURIComponent(svg)+'")')).catch(error=>console.warn('网页品牌水印加载失败：'+error.message));
 document.documentElement.dataset.revision=releaseInfo.revision||'';
-document.title=brandConfig.name+' · 藏地选物';
+document.title=siteConfig.name;
 if($('.release-version'))$('.release-version').textContent='测试版 v'+releaseInfo.version+' · VI '+releaseInfo.viVersion;
 for(const element of [$('.brand>span:last-child'),$('footer>span')])if(element?.firstChild && !element.querySelector('img'))element.firstChild.textContent=brandConfig.name;
 for(const small of document.querySelectorAll('.brand small,footer>span small'))small.textContent=brandConfig.englishName;
+document.querySelectorAll('[data-site-name]').forEach(el=>el.textContent=siteConfig.name);
 if($('.header-note'))$('.header-note').textContent=brandConfig.subtitle;
 if(brandConfig.assets?.enabled){
   for(const [element,key] of [[$('.brand'),'logo-color'],[$('footer>span'),'logo-color']]){
@@ -29,14 +31,14 @@ if(brandConfig.assets?.enabled){
     if(!existing){image.src=target;element.replaceChildren(image);}
     else if(image.src!==new URL(target,document.baseURI).href){const replacement=new Image();replacement.src=target;replacement.decode().then(()=>{image.src=target;}).catch(()=>console.warn('品牌图片未能切换，保留已有标识'));}
     if(image.complete && !image.naturalWidth)image.alt=brandConfig.name;
-    element.setAttribute('aria-label',brandConfig.name+'首页');
+    element.setAttribute('aria-label',siteConfig.name+'首页');
   }
 }else if($('.brand .seal'))$('.brand .seal').innerHTML=mountainSvg();
 function brandQrUrl(path){return typeof embeddedBrandQrs!=='undefined' && embeddedBrandQrs[path] || './'+path;}
 const contactDialog=document.createElement('dialog');contactDialog.id='contact-dialog';contactDialog.setAttribute('aria-labelledby','contact-title');document.body.append(contactDialog);
 const contactButton=document.createElement('button');contactButton.id='open-contact';contactButton.className='secondary';contactButton.textContent='微信客服';contactButton.setAttribute('aria-label','查看客服微信和二维码');document.body.append(contactButton);
 function openContacts(focusIndex=0){
-  contactDialog.innerHTML=`<button class="close" data-close aria-label="关闭客服联系区">×</button><div class="contact-content"><p class="eyebrow">${escapeHTML(brandConfig.name)}</p><h2 id="contact-title">联系微信客服</h2><p class="small-note">长按原始二维码，可识别或保存；也可复制微信号添加。</p><div class="contact-cards">${brandConfig.customerServices.map((service,index)=>`<section class="contact-card" id="service-${index}"><h3>${escapeHTML(service.label)}</h3><p class="contact-id">微信：${escapeHTML(service.wechatId)}</p>${service.qrCodePath?`<img class="contact-qr-full" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信原始二维码" loading="eager" decoding="async">`:''}<button class="secondary" data-copy-service="${index}">复制${escapeHTML(service.label)}微信号</button></section>`).join('')}</div></div>`;
+  contactDialog.innerHTML=`<button class="close" data-close aria-label="关闭客服联系区">×</button><div class="contact-content"><p class="eyebrow">${escapeHTML(siteConfig.name)}</p><h2 id="contact-title">联系微信客服</h2><p class="small-note">${escapeHTML(siteConfig.contactHint)}<br>长按二维码可识别或保存，也可复制微信号添加。</p><div class="contact-cards">${onlineServices(brandConfig).map(service=>({service,index:brandConfig.customerServices.indexOf(service)})).map(({service,index})=>`<section class="contact-card" id="service-${index}"><h3>${escapeHTML(service.label)}</h3><p class="contact-id">微信：${escapeHTML(service.wechatId)}</p>${service.qrCodePath?`<img class="contact-qr-full" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信原始二维码" loading="eager" decoding="async">`:''}<button class="secondary" data-copy-service="${index}">复制${escapeHTML(service.label)}微信号</button></section>`).join('')}</div></div>`;
   if(!contactDialog.open)contactDialog.showModal();
   contactDialog.querySelector('#service-'+focusIndex)?.scrollIntoView({block:'nearest'});
 }
@@ -49,7 +51,7 @@ contactDialog.addEventListener('click',async e=>{
   try{await navigator.clipboard.writeText(service.wechatId);toast(service.label+'微信号已复制');}catch{toast('请长按上方微信号复制');}
 });
 function brandContactMarkup(){
-  return `<div class="brand-contact"><strong>${escapeHTML(brandConfig.name)}</strong>${brandConfig.customerServices.map((service,index)=>`<button class="contact-copy" data-copy-contact="${index}" aria-label="复制${escapeHTML(service.label)}微信号">${escapeHTML(service.label)}微信：${escapeHTML(service.wechatId)} <span>复制</span></button>${service.qrCodePath?`<button class="contact-qr-button" data-open-service="${index}" aria-label="查看${escapeHTML(service.label)}原始微信二维码"><img class="contact-qr-mini" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信二维码，点击查看大图"><span>查看大图</span></button>`:''}`).join('')}</div>`;
+  return `<div class="brand-contact"><strong>${escapeHTML(siteConfig.name)}</strong>${onlineServices(brandConfig).map(service=>({service,index:brandConfig.customerServices.indexOf(service)})).map(({service,index})=>`<button class="contact-copy" data-copy-contact="${index}" aria-label="复制${escapeHTML(service.label)}微信号">${escapeHTML(service.label)}微信：${escapeHTML(service.wechatId)} <span>复制</span></button>${service.qrCodePath?`<button class="contact-qr-button" data-open-service="${index}" aria-label="查看${escapeHTML(service.label)}原始微信二维码"><img class="contact-qr-mini" src="${brandQrUrl(service.qrCodePath)}" alt="${escapeHTML(service.label)}微信二维码，点击查看大图"><span>查看大图</span></button>`:''}`).join('')}</div>`;
 }
 $('#detail').addEventListener('click',async e=>{
   const qrButton=e.target.closest('[data-open-service]');if(qrButton){openContacts(Number(qrButton.dataset.openService));return;}
@@ -91,17 +93,19 @@ const moreButton=document.createElement('button');moreButton.id='load-more';more
 moreButton.addEventListener('click',()=>{visibleLimit+=24;renderProducts();});
 function renderProducts(){
   $('#categories').innerHTML=categories.map(c=>`<button class="${c===category?'active':''}" aria-pressed="${c===category}" data-category="${c}">${c}</button>`).join('');
-  const shown=products.filter(p=>(categoryMatches(p,category))&&`${p.name}${p.subtitle}${p.category}`.includes(query));
+  const shown=products.filter(p=>(categoryMatches(p,category))&&`${p.name}${p.subtitle}${p.category}`.includes(query)).sort((a,b)=>Number(b.demo===false)-Number(a.demo===false));
   $('#results-count').textContent=`共 ${shown.length} 件好物`;
   $('#empty').hidden=shown.length>0;moreButton.hidden=shown.length<=visibleLimit;
-  $('#products').innerHTML=shown.slice(0,visibleLimit).map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${p.name}详情"><div class="product-image">${imageMarkup(p)}<span class="tag">${p.demo===false?p.tag:'演示 · '+p.tag}</span></div><div class="product-info"><span class="product-category">${p.category}</span><div class="product-title"><h3>${p.name}</h3><span class="price">¥ ${p.price.toFixed(2)}</span></div><p>${p.subtitle}</p></div></button>`).join('');
+  $('#products').innerHTML=shown.slice(0,visibleLimit).map(p=>`<button class="product-card" data-product="${p.id}" aria-label="查看${escapeHTML(p.name)}详情${p.demo===false?'':'，演示商品'}"><div class="product-image">${imageMarkup(p)}${p.demo===false?'':'<span class="demo-note">演示</span>'}</div><div class="product-info"><h3>${escapeHTML(p.name)}</h3><span class="price">¥${p.price.toFixed(2)}${p.unit?'/'+escapeHTML(p.unit):''}</span></div></button>`).join('');
 }
 $('#categories').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(b){category=b.dataset.category;visibleLimit=24;renderProducts();}});
 $('#search').addEventListener('input',e=>{query=e.target.value.trim();category=categories[0];visibleLimit=24;renderProducts();});
 $('#search').addEventListener('keydown',e=>{if(e.key==='Enter')$('#collection').scrollIntoView({behavior:'smooth'});});
 $('#products').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(b)openDetail(b.dataset.product);});
 function openDetail(id){selected=products.find(p=>p.id===id);variant=selected.variants[0];quantity=1;photoIndex=0;renderDetail();$('#detail').showModal();}
-function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><span class="eyebrow">${p.category} / ${p.demo===false?'COLLECTION':'DEMO COLLECTION'}</span><h2 id="detail-title">${p.name}</h2><span class="price">¥ ${p.price.toFixed(2)}</span><p>${p.description}</p><div class="specs">材质：${p.material}<br>规格：${p.size}</div><span class="variant-label">选择款式 <span class="small-note">（款式照片随选择切换）</span></span><div class="variants">${p.variants.map(v=>`<button data-variant="${v}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${v}</button>`).join('')}</div></div></div><div class="detail-actions">${brandContactMarkup()}<div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 加入清单不代表下单，无需支付</p></div>`;renderGallery();}
+function variantButtons(p){return p.variants.map(v=>{const own=photoPath(p.variantImages?.[v]?.[0]);return `<button data-variant="${escapeHTML(v)}" class="${v===variant?'active':''}" aria-pressed="${v===variant}">${own?`<img src="${photoUrl(own,'thumb')}" alt="${escapeHTML(v)}实拍" width="50" height="50" decoding="async">`:''}<span>${escapeHTML(v)}${p.variants.length>1?`<small>¥${p.price.toFixed(2)} / ${p.unit||'件'}</small>`:''}</span></button>`;}).join('');}
+function renderDetail(){const p=selected;$('#detail').innerHTML=`<button class="close" data-close aria-label="关闭商品详情">×</button><div class="detail-layout"><section id="gallery" class="gallery" aria-label="商品相册"></section><div class="detail-copy"><p class="eyebrow">${escapeHTML(p.category)}${p.demo===false?'':' · 演示商品'}</p><h2 id="detail-title">${escapeHTML(p.name)}</h2><span class="price">¥ ${p.price.toFixed(2)}${p.unit?' / '+escapeHTML(p.unit):''}</span><span class="variant-label">选择款式 <span class="small-note">照片与所选款式对应</span></span><div class="variants">${variantButtons(p)}</div><div class="specs">尺寸：${escapeHTML(p.size)}<br>材质：${escapeHTML(p.material)}</div><p class="product-description">${escapeHTML(p.description)}</p></div></div><div class="detail-actions">${brandContactMarkup()}<div class="add-row"><div class="quantity"><button data-delta="-1" aria-label="减少数量" ${quantity===1?'disabled':''}>−</button><span aria-live="polite">${quantity}</span><button data-delta="1" aria-label="增加数量" ${quantity===99?'disabled':''}>+</button></div><button class="primary" id="add-cart">加入选购清单</button></div><button class="continue-variants secondary" id="add-more">加入并继续选款</button><p class="small-note">${p.demo===false?'实物商品展示':'演示商品'} · 可分别选择款式和数量，多次加入清单 · 无需支付</p></div>`;renderGallery();}
+
 let preloadTimer;
 function renderGallery(){
   const {photos,generic}=productGallery(selected,variant);
@@ -135,7 +139,7 @@ $('#detail').addEventListener('click',e=>{
   const v=e.target.closest('[data-variant]'),d=e.target.closest('[data-delta]');
   if(v){variant=v.dataset.variant;photoIndex=0;renderGallery();$('#detail .variants').querySelectorAll('button').forEach(b=>{b.classList.toggle('active',b===v);b.setAttribute('aria-pressed',b===v);});}
   if(d){quantity=Math.max(1,Math.min(99,quantity+Number(d.dataset.delta)));const buttons=$('#detail .quantity').querySelectorAll('button');$('#detail .quantity span').textContent=quantity;buttons[0].disabled=quantity===1;buttons[1].disabled=quantity===99;}
-  if(e.target.closest('#add-cart')){const old=cart.find(i=>i.id===selected.id&&i.variant===variant);if(old)old.quantity=Math.min(99,old.quantity+quantity);else cart.push({id:selected.id,variant,quantity});save();$('#detail').close();toast('已加入清单，喜欢的好物已为你记下');}
+  if(e.target.closest('#add-cart')||e.target.closest('#add-more')){const old=cart.find(i=>i.id===selected.id&&i.variant===variant);if(old)old.quantity=Math.min(99,old.quantity+quantity);else cart.push({id:selected.id,variant,quantity});save();if(e.target.closest('#add-more')){quantity=1;renderDetail();$('#detail .variants [aria-pressed=true]')?.focus({preventScroll:true});toast('此款已加入，可继续选择其他款式');}else{$('#detail').close();toast('已加入清单，喜欢的好物已为你记下');}}
 });
 function renderList(){
   clearExport();
@@ -165,7 +169,7 @@ async function shareExport(){
   const file=exportFile,button=$('#share-image');
   if(button)button.disabled=true;
   try{
-    await navigator.share({files:[file],title:brandConfig.name+' · 选购清单'});
+    await navigator.share({files:[file],title:siteConfig.name+' · 选购清单'});
   }catch(error){
     if(error.name!=='AbortError')toast('此浏览器暂时无法分享，请长按下方图片保存到相册');
   }finally{if(button)button.disabled=false;}
@@ -189,21 +193,26 @@ async function exportImage(){
     const footerArtwork=await loadBrandFooter();
     await document.fonts.ready;
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(footerArtwork?650:qrImages.length?1200:760)+exportCart.length*155;const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=brandConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(brandConfig.englishName+' / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
+    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=(footerArtwork?900:qrImages.length?1500:1050)+exportCart.length*155;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#f7f5ef';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#343b32';ctx.font='32px sans-serif';const title=siteConfig.name+' · 选购清单';const titleWidth=ctx.measureText(title).width;if(titleWidth>800)ctx.font=Math.max(18,Math.floor(32*800/titleWidth))+'px sans-serif';ctx.fillText(title,50,70);ctx.font='17px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(brandConfig.englishName+' / COLLECTION',50,110);ctx.fillText(hasDemo?'含演示商品 · 选购意向，非正式订单':'选购意向，非正式订单',50,155);
     for(let index=0;index<exportCart.length;index++){const i=exportCart[index],p=products.find(p=>p.id===i.id),y=205+index*155;ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);ctx.fillStyle='#858574';ctx.font='14px sans-serif';ctx.fillText('图片待上传',66,y+64);
-      if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,photos[index],50,y,105,120);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
+      if(photos[index]){ctx.fillStyle='#e9e3d7';ctx.fillRect(50,y,105,120);drawPhoto(ctx,photos[index],50,y,105,120);}ctx.fillStyle='#343b32';ctx.font='24px sans-serif';ctx.fillText(p.name,180,y+30);ctx.font='19px sans-serif';ctx.fillStyle='#7e836f';ctx.fillText(`${i.variant} × ${i.quantity} · 单价¥${p.price}/${p.unit||'件'}`,180,y+68);ctx.fillStyle='#343b32';ctx.fillText(`¥${p.price*i.quantity}`,690,y+65);ctx.strokeStyle='#deded3';ctx.beginPath();ctx.moveTo(50,y+140);ctx.lineTo(850,y+140);ctx.stroke();}
     const y=230+exportCart.length*155;ctx.fillStyle='#343b32';ctx.font='26px sans-serif';ctx.fillText(`参考合计：¥${total(exportCart).toFixed(2)}`,50,y+30);ctx.fillStyle='#7e836f';ctx.font='17px sans-serif';ctx.fillText('请与店主确认库存、运费及最终价格。',50,y+80);ctx.fillText('图片仅供选款参考，本清单不包含支付功能。',50,y+110);
     brandFooter(ctx,y,qrImages,brandConfig,footerArtwork);
+    ctx.fillStyle='#244d3e';ctx.font='20px sans-serif';let storeY=footerArtwork?y+415:y+830;
+    for(const line of storeLines()){ctx.fillText(line,50,storeY);storeY+=31;}
+    ctx.font='17px sans-serif';ctx.fillText(siteConfig.relationship,50,storeY+4);ctx.fillText(siteConfig.headline,50,storeY+34);
+    ctx.fillText('两位线上客服均服务两家门店，添加不成功可联系另一位。',50,storeY+65);
+    if(brandConfig.showWebsiteUrl && brandConfig.websiteUrl)ctx.fillText(brandConfig.websiteUrl,50,storeY+95);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('图片生成失败，请重试');
     if(JSON.stringify(cart)!==snapshot)throw new Error('清单已变化，请重新生成图片');
-    clearExport();exportFile=new File([blob],brandConfig.name+'-选购清单.png',{type:'image/png'});
+    clearExport();exportFile=new File([blob],siteConfig.name+'-选购清单.png',{type:'image/png'});
     // A data URL survives browser long-press saving better than a short-lived blob URL.
     exportUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片生成失败'));reader.readAsDataURL(blob);});
     if(JSON.stringify(cart)!==snapshot){clearExport();throw new Error('清单已变化，请重新生成图片');}
     const shareable=supportsImageShare(exportFile);
     const result=document.createElement('section');result.id='export-result';
-    result.innerHTML=`<h3>图片清单已生成</h3><p class="save-image-hint"><strong>长按下方图片 → 保存到相册</strong><br>也可点击分享，将完整清单发送给微信客服。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="${escapeHTML(brandConfig.name)}-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
+    result.innerHTML=`<h3>图片清单已生成</h3><p class="save-image-hint"><strong>长按下方图片 → 保存到相册</strong><br>也可点击分享，将完整清单发送给微信客服。</p><div class="list-actions">${shareable?'<button class="primary" id="share-image">分享图片／保存到相册</button>':''}<a class="secondary" id="download-image" download="${escapeHTML(siteConfig.name)}-选购清单.png">下载图片</a></div><img id="export-preview" alt="完整选购清单，长按可保存">`;
     $('#list-dialog .list-content').append(result);
     $('#export-preview').src=exportUrl;$('#download-image').href=exportUrl;
     result.scrollIntoView({block:'start'});
@@ -227,8 +236,14 @@ function homeImage(path,alt,{hero=false}={}){
  return hero?`<picture><source media="(max-width:760px)" srcset="${photoUrl(path,'card')}">${img}</picture>`:img;
 }
 function selectHomeCategory(name){category=name;query='';$('#search').value='';visibleLimit=24;renderProducts();$('#collection').scrollIntoView({behavior:'smooth'});}
-$('#home-hero-photo').innerHTML=homeImage(homeConfig.hero,'扎西德勒鸭拉萨门店内部实拍',{hero:true});
-$('#home-category-grid').innerHTML=homeConfig.categories.map(c=>`<button class="home-category" data-home-category="${escapeHTML(c.name)}">${homeImage(c.photo,c.name+' · 门店实拍')}<span>${escapeHTML(c.name)}</span></button>`).join('')+`<button class="home-category store-tile" data-open-store>${homeImage(homeConfig.storefront,'拉萨门店门头实拍')}<span>我们的拉萨小店 →</span></button>`;
+let storeIndex=0;
+function renderStore(){const s=siteConfig.stores[storeIndex];$('#home-hero-photo').innerHTML=s.photo?homeImage(s.photo,s.location+'｜'+s.name+' · 实拍',{hero:true}):`<div class="store-photo-pending" role="img" aria-label="${s.location}真实照片待提供"><strong>${s.location}｜${s.name}</strong><span>真实店铺照片待提供</span></div>`;$('#store-caption').textContent=s.location+'｜'+s.name;$('#store-dots').innerHTML=siteConfig.stores.map((s,i)=>`<button data-store-index="${i}" aria-label="查看${s.location}｜${s.name}" aria-pressed="${i===storeIndex}"><span aria-hidden="true">${i===storeIndex?'●':'○'}</span><span><b>${s.location}</b><small>${s.name}</small></span></button>`).join('');}
+function moveStore(delta){storeIndex=(storeIndex+delta+siteConfig.stores.length)%siteConfig.stores.length;renderStore();}
+$('#home-hero-photo').tabIndex=0;
+$('#store-carousel').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();moveStore(e.key==='ArrowRight'?1:-1);$('#store-dots [aria-pressed=true]').focus({preventScroll:true});}});
+$('#store-carousel').addEventListener('click',e=>{const dot=e.target.closest('[data-store-index]');if(dot){storeIndex=Number(dot.dataset.storeIndex);renderStore();}if(e.target.closest('[data-store-prev]'))moveStore(-1);if(e.target.closest('[data-store-next]'))moveStore(1);});
+let storeTouch=null;$('#home-hero-photo').addEventListener('touchstart',e=>{storeTouch=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});$('#home-hero-photo').addEventListener('touchend',e=>{if(!storeTouch||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-storeTouch.x,dy=e.changedTouches[0].clientY-storeTouch.y;storeTouch=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)moveStore(dx<0?1:-1);},{passive:true});$('#home-hero-photo').addEventListener('touchcancel',()=>{storeTouch=null;});renderStore();
+$('#home-category-grid').innerHTML=homeConfig.categories.map(c=>`<button class="home-category" data-home-category="${escapeHTML(c.name)}">${homeImage(c.photo,c.name+' · 门店实拍')}<span>${escapeHTML(c.name)}</span></button>`).join('')+`<button class="home-category store-tile" data-open-store>${homeImage(homeConfig.storefront,'八廓街店｜加西得了个鸭门头实拍')}<span>两家小店 →</span></button>`;
 $('#home-feature-grid').innerHTML=homeConfig.featuredIds.map(id=>{const p=products.find(p=>p.id===id);return p?`<button class="home-feature" data-feature-product="${id}">${homeImage(p.coverImage,p.name+' · 实拍展示')}<span>${escapeHTML(p.name)} <span>¥${p.price}/个</span></span></button>`:'';}).join('');
 document.addEventListener('click',e=>{
  const c=e.target.closest('[data-home-category]');if(c)selectHomeCategory(c.dataset.homeCategory);
@@ -236,7 +251,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-show-all]'))selectHomeCategory(categories[0]);
  if(e.target.closest('[data-open-list]'))$('#open-list').click();
  if(e.target.closest('[data-open-contact]'))openContacts();
- if(e.target.closest('[data-open-store]')){$('#store-photo').innerHTML=homeImage(homeConfig.storefront,'拉萨门店门头实拍',{hero:true});$('#store-dialog').showModal();}
+ if(e.target.closest('[data-open-store]')){$('#store-photo').innerHTML=siteConfig.stores.map(s=>`<section><h3>${s.location}｜${s.name}</h3>${s.photo?homeImage(s.photo,s.location+'真实门头',{hero:true}):'<p class="store-photo-pending">真实照片待提供</p>'}${s.id==='street'?'<h4>八廓街店店内实拍</h4>'+homeImage(homeConfig.hero,'八廓街店店内实拍',{hero:true}):''}</section>`).join('');$('#store-dialog').showModal();}
 });
 $('#store-dialog').addEventListener('click',e=>{if(e.target===$('#store-dialog')||e.target.closest('[data-close]'))$('#store-dialog').close();if(e.target.closest('[data-store-contact]')){$('#store-dialog').close();openContacts();}});
 

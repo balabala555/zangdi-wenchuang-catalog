@@ -10,7 +10,7 @@ try{
  for(const [name,width,height]of [['mobile',390,844],['desktop',1440,1000]]){
   const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:name==='mobile'?3:1,hasTouch:name==='mobile'}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.locator('#home-hero-photo img').evaluate(i=>i.decode());
+  await page.goto(`http://127.0.0.1:${server.address().port}/`);if(await page.locator('#home-hero-photo img').count()===0){assert.match(await page.locator('#store-caption').textContent(),/八廓商场店/);await page.locator('[data-store-index="1"]').click();}await page.locator('#home-hero-photo img').evaluate(i=>i.decode());
   await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--page-brand-watermark').includes('base64'));
   assert.equal(await page.locator('[data-home-category]').count(),7);assert.equal(await page.locator('[data-feature-product]').count(),2);
   assert.equal(await page.locator('.hero-placeholder').count(),0);
@@ -26,11 +26,11 @@ try{
   await page.locator('[data-feature-product="soft-lamb"]').click();assert.match(await page.locator('#detail-title').textContent(),/软萌小羊/);await page.locator('#add-cart').click();
   await page.locator('[data-feature-product="rainbow-lamb"]').click();await page.locator('#add-cart').click();
   await page.locator('.bottom-nav [data-open-list]').click();assert.match(await page.locator('.list-total').textContent(),/45/);await page.locator('#export-image').click();await page.locator('#export-preview').waitFor();await page.locator('#list-dialog [data-close]').click();
-  await page.locator('[data-open-store]').click();await page.locator('#store-photo img').evaluate(i=>i.decode());await page.locator('#store-dialog [data-close]').click();
+  await page.locator('[data-open-store]').click();await page.locator('#store-photo img').evaluateAll(imgs=>Promise.all(imgs.map(i=>i.decode())));await page.locator('#store-dialog [data-close]').click();
   await page.locator('#open-contact').click();assert.equal(await page.locator('.contact-qr-full').count(),2);assert.deepEqual(errors,[]);await page.close();
  }
  for(const width of [320,768]){const narrow=await browser.newPage({viewport:{width,height:844}});await narrow.goto(`http://127.0.0.1:${server.address().port}/`);assert.equal(await narrow.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Narrow/tablet overflow');await narrow.close();}
- const offline=await browser.newPage();await offline.route('**/public/**',r=>r.abort());await offline.goto(`http://127.0.0.1:${server.address().port}/preview.html`);await offline.locator('#home-hero-photo img').evaluate(i=>i.decode());assert.equal(await offline.locator('[data-home-category]').count(),7);await offline.close();
+ const offline=await browser.newPage();await offline.route('**/public/**',r=>r.abort());await offline.goto(`http://127.0.0.1:${server.address().port}/preview.html`);await offline.locator('[data-store-index="1"]').click();await offline.locator('#home-hero-photo img').evaluate(i=>i.decode());assert.equal(await offline.locator('[data-home-category]').count(),7);await offline.close();
  await writeFile(`${out}/homepage-performance-v${releaseInfo.version}.json`,JSON.stringify({note:'Local Chromium cold navigation; not a mobile network or Safari benchmark.',samples:metrics},null,2));
  console.log('PASS homepage: 7 categories, real hero/features, search, ¥45 cart/PNG, store/contact, no overflow/external requests, offline and screenshots',metrics);
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
