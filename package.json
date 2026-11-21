@@ -24,5 +24,9 @@
     "@img/sharp-wasm32": "0.35.5",
     "fontkit": "3.0.0",
     "sharp": "0.35.5"
+  },
+  "dependencies": {
+    "yauzl": "^3.4.0",
+    "yazl": "^3.3.1"
   }
 }
