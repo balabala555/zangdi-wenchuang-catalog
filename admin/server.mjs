@@ -1,4 +1,6 @@
 import {checkCatalogue,upgradeWatermarks} from './catalog-check.mjs';
+import {realAcceptance} from './real-acceptance.mjs';
+import {Publication} from './publication.mjs';
 import {recordFailure} from './diagnostics.mjs';
 import {PhotoLibrary,assetPattern} from './assets.mjs';
 import {ArchiveService} from './archive.mjs';
@@ -21,7 +23,7 @@ const here=fileURLToPath(new URL('./',import.meta.url));
 const equal=(a,b)=>{const x=Buffer.from(String(a||'')),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);};
 const media=new Map(Object.values(optimizedPhotos).flatMap(p=>[p.public,p.thumb,p.card,p.detail]).map(p=>[p.path,p.sha256]));
 export function createAdminServer({dataDir=defaultDataDir()}={}){
- const store=new CatalogStore(dataDir),photos=new PhotoLibrary(store.dir),archives=new ArchiveService(store,photos),session=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex');
+ const store=new CatalogStore(dataDir),photos=new PhotoLibrary(store.dir),archives=new ArchiveService(store,photos),publication=new Publication(store,photos,archives),session=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex');
  const server=http.createServer(async(req,res)=>{
   const send=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(value));};
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
@@ -43,8 +45,9 @@ export function createAdminServer({dataDir=defaultDataDir()}={}){
    const cookie=String(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('zangdi_admin='))?.slice(13);
    if(!equal(cookie,session))return send(401,{error:'请从本机管理台首页重新打开，未修改商品资料'});
    if(req.method==='GET'&&pathname==='/media'){let file=url.searchParams.get('path');if(assetPattern.test(file||'')){if(url.searchParams.get('size')==='original')return send(403,{error:'原图仅私有保存，可通过完整备份导出，不提供展示访问'});const bytes=photos.media(file,url.searchParams.get('size'));res.writeHead(200,{'Content-Type':'image/webp'});return res.end(bytes);}if(!media.has(file))return send(404,{error:'只能查看已验证的受保护商品照片'});const size=url.searchParams.get('size');if(['thumb','detail'].includes(size)&&optimizedPhotos[file])file=optimizedPhotos[file][size].path;const bytes=fs.readFileSync(archives.legacyFile(file));if(createHash('sha256').update(bytes).digest('hex')!==media.get(file))return send(409,{error:'图片保护校验失败，未展示未验证图片'});res.writeHead(200,{'Content-Type':file.endsWith('.webp')?'image/webp':file.endsWith('.png')?'image/png':'image/jpeg'});return res.end(bytes);}
-   if(req.method==='GET'&&pathname==='/api/session')return send(200,{csrf,siteName:siteConfig.name,brandName:brandConfig.name,version:releaseInfo.version,adminPatch:releaseInfo.adminPatch,revision:releaseInfo.revision,categories,modernCategories,statuses,dataDir:store.dir,contacts:(Array.isArray(brandConfig.customerServices)?brandConfig.customerServices:[]).map(s=>s?.wechatId).filter(id=>typeof id==='string'&&id.trim()),phase:'商品管理完善版；仅保存本机，未连接顾客网站',lastCategory:(()=>{try{return store.read().preferences?.lastCategory;}catch{return null;}})()});
+   if(req.method==='GET'&&pathname==='/api/session')return send(200,{csrf,siteName:siteConfig.name,brandName:brandConfig.name,version:releaseInfo.version,adminPatch:releaseInfo.adminPatch,revision:releaseInfo.revision,categories,modernCategories,statuses,dataDir:store.dir,contacts:(Array.isArray(brandConfig.customerServices)?brandConfig.customerServices:[]).map(s=>s?.wechatId).filter(id=>typeof id==='string'&&id.trim()),phase:'V1.5本地发布与库存；未连接公网',lastCategory:(()=>{try{return store.read().preferences?.lastCategory;}catch{return null;}})()});
    if(req.method==='GET'&&pathname==='/api/catalog')return send(200,{catalog:store.read(),fingerprint:store.fingerprint()});
+   if(req.method==='GET'&&pathname==='/api/publication')return send(200,publication.status());
    if(req.method==='GET'&&pathname==='/api/preflight')return send(200,checkCatalogue(store,photos,archives));
    if(req.method==='GET'&&pathname==='/api/backups')return send(200,{...store.list(),fingerprint:store.fingerprint()});
    if(req.method==='GET'&&pathname==='/api/backup/download'){const backup=store.download();res.setHeader('Content-Disposition','attachment; filename="catalog-backup-'+Date.now()+'.json"');return send(200,backup);}
@@ -67,18 +70,22 @@ export function createAdminServer({dataDir=defaultDataDir()}={}){
    let body;try{body=JSON.parse(Buffer.concat(chunks));}catch{throw new StoreError(400,'请求格式不正确');}if(!body||typeof body!=='object'||Array.isArray(body))throw new StoreError(400,'请求格式不正确');
    let result;
    if(pathname==='/api/product/save'){operation='product-validate';if(!body.product||typeof body.product!=='object'||Array.isArray(body.product))throw new StoreError(400,'商品资料格式不正确');store.preparePhase2();if(body.product.photos){const p=body.product.photos;photos.validateRefs([p.cover,...(p.common||[]),...Object.values(p.variants||{}).flat()].filter(Boolean));}operation='product-snapshot';result=store.save(body.product,body.id||null,body.revision);}
+   else if(pathname==='/api/publication/verify-real'){return send(200,await realAcceptance(store));}
+   else if(pathname==='/api/publication/initialize'){result=await publication.initialize(body);}
+   else if(pathname==='/api/publication/publish'){result=publication.publish(body);}
+   else if(pathname==='/api/publication/withdraw'){result=publication.publish({...body,withdraw:true});}
    else if(pathname==='/api/product/action'){result=store.action(body);}
    else if(pathname==='/api/photos/upgrade'){const value=await upgradeWatermarks(store,photos,archives,body);return send(200,{...value,fingerprint:store.fingerprint(),message:'已备份并从私有原图生成分布式保护图，原文件保留，未发布。'});}
    else if(pathname==='/api/product/status'){store.preparePhase2();result=store.setStatus(body.id,body.status,body.revision);}
    else if(pathname==='/api/backup/full'){return send(200,archives.start(body.revision));}
    else if(pathname==='/api/backup/full/restore'){result=await archives.restore(body);}
    else if(pathname==='/api/backup')result=store.backup(body.revision);
-   else if(pathname==='/api/restore'){const p=body.file?(store.names().includes(body.file)?unpack(fs.readFileSync(path.join(store.snapshots,body.file))):null):unpack(JSON.stringify(body.backup));if(!p)throw new StoreError(400,'快照不存在');photos.validateRefs(p.products.flatMap(p=>[p.photos.cover,...p.photos.common,...Object.values(p.photos.variants).flat()]).filter(Boolean));result=store.restore(body);}
+   else if(pathname==='/api/restore'){const p=body.file?(store.names().includes(body.file)?unpack(fs.readFileSync(path.join(store.snapshots,body.file))):null):unpack(JSON.stringify(body.backup));if(!p)throw new StoreError(400,'快照不存在');photos.validateRefs([...p.products,...(p.publication?.products||[])].flatMap(p=>[p.photos.cover,...p.photos.common,...Object.values(p.photos.variants).flat()]).filter(Boolean));result=store.restore(body);}
    else return send(404,{error:'本阶段不提供永久删除原图或发布接口'});
    return send(200,{catalog:result,fingerprint:store.fingerprint(),message:'已保存到本地商品库；尚未同步顾客网站或正式发布'});
   }catch(error){const diagnostic=(!error.status||error.status>=500)?recordFailure(store.dir,error,operation):null;return send(error.status||500,{error:diagnostic?(error instanceof StoreError?error.message+' ':'')+diagnostic.message:error.message,...(diagnostic?{diagnostic:{id:diagnostic.id,stage:diagnostic.stage,code:diagnostic.code,logSaved:diagnostic.logSaved}}:{}),fingerprint:store.fingerprint()});}
  });
- server.requestTimeout=0;return {server,store,photos,archives,launchToken:session};
+ server.requestTimeout=0;return {server,store,photos,archives,publication,launchToken:session};
 }
 export async function startAdmin({dataDir=defaultDataDir(),port=3100,open=true}={}){
  const app=createAdminServer({dataDir});

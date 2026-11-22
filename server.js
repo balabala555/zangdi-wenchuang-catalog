@@ -40,6 +40,7 @@ export function createServer({basePath='/',management=null,localCatalogue=null}=
           try{const snapshot=localCatalogue.read();res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8'});return res.end('const snapshot=JSON.parse('+JSON.stringify(JSON.stringify(snapshot))+');export const products=snapshot.products,categories=snapshot.categories,catalogPreview=snapshot.catalogPreview;');}
           catch{res.writeHead(409,{'Content-Type':'text/javascript; charset=utf-8'});return res.end('throw new Error("本机商品库校验失败，请先用07核对资料；没有改动数据。");');}
         }
+        if(pathname==='/api/customer-availability'){try{const snapshot=localCatalogue.read(),p=snapshot.products.find(p=>p.id===url.searchParams.get('id')),name=url.searchParams.get('variant'),stock=p?.variantStocks?.[name],status=p?.variantStatuses?.[name];res.writeHead(200,{'Content-Type':'application/json; charset=utf-8'});return res.end(JSON.stringify({revision:snapshot.catalogPreview.revision,published:snapshot.catalogPreview.published,publicationId:snapshot.catalogPreview.publicationId,exists:!!p&&p.variants.includes(name),stock:stock??null,available:!!p&&p.variants.includes(name)&&status==='on_sale'&&(stock===null||stock===undefined||stock>0)}));}catch{res.writeHead(409);return res.end('商品信息暂不可用，请刷新');}}
         const match=pathname.match(/^\/public\/images\/local-preview\/([a-f0-9]{64})\.webp$/);
         if(match){try{if(url.searchParams.get('size')==='original-file'){res.writeHead(403);return res.end();}const bytes=localCatalogue.media('asset:'+match[1],url.searchParams.get('size'));res.writeHead(200,{'Content-Type':'image/webp','Cache-Control':'no-store'});return res.end(req.method==='HEAD'?undefined:bytes);}catch{res.writeHead(404);return res.end('Protected photo unavailable');}}
       }
@@ -72,7 +73,7 @@ export function createServer({basePath='/',management=null,localCatalogue=null}=
 export async function startWebsite(){
  const port=Number(process.env.PORT||3000),basePath=process.env.BASE_PATH||'/';let localCatalogue=null;
  if(process.env.CATALOG_PREVIEW_SOURCE!=='static'&&existsSync(path.join(root,'admin/customer-preview.mjs'))){
-  const {localCatalogueReader}=await import('./admin/customer-preview.mjs');localCatalogue=localCatalogueReader();const snapshot=localCatalogue.read();console.log(`顾客网页读取本机商品库：${snapshot.catalogPreview.count}件在售真实商品，资料版本${snapshot.catalogPreview.revision}。只读，不发布；后台保存后刷新页面。`);
+  const {localCatalogueReader}=await import('./admin/customer-preview.mjs');localCatalogue=localCatalogueReader();const snapshot=localCatalogue.read();console.log(`顾客网页读取本机商品库：${snapshot.catalogPreview.count}件在售真实商品，资料版本${snapshot.catalogPreview.revision}。只读本机数据；启用后需点击发布再刷新，草稿不自动展示。`);
  }
  const server=createServer({basePath,localCatalogue,management:process.env.CATALOG_PREVIEW_TOKEN?{token:process.env.CATALOG_PREVIEW_TOKEN,version:process.env.CATALOG_PREVIEW_VERSION}:null});
  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,localCatalogue?'127.0.0.1':'0.0.0.0',resolve);});console.log(`顾客网页：http://localhost:${server.address().port}${basePath}；${localCatalogue?'已接入本机商品资料（非演示静态数据）':'原静态商品数据'}`);return server;

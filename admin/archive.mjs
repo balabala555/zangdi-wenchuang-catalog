@@ -10,7 +10,7 @@ import {assetPattern,assetPath,assetMeta,sha} from './assets.mjs';
 const legacy=new Map(Object.values(optimizedPhotos).flatMap(p=>[p.public,p.thumb,p.card,p.detail]).map(p=>[p.path,p]));
 const safe=name=>name.length<240&&!name.includes('\\')&&!name.split('/').some(p=>p==='..'||p==='.'||!p)&&!name.includes(':')&&!name.startsWith('/');
 const allowed=name=>['catalog.json','categories.json'].includes(name)||/^snapshots\/\d{10}-[a-f0-9-]{36}\.json$/.test(name)||/^assets\/[a-f0-9]{64}\/(meta\.json|original\.(jpg|png|webp)|detail\.webp|thumb\.webp|fallback\.jpg)$/.test(name)||name.startsWith('legacy/display/public/images/')&&legacy.has(name.slice('legacy/display/'.length))||name.startsWith('legacy/originals/public/images/')&&Object.hasOwn(optimizedPhotos,name.slice('legacy/originals/'.length));
-const refs=p=>[...new Set(p.products.flatMap(r=>[r.photos.cover,...r.photos.common,...Object.values(r.photos.variants).flat()]).filter(Boolean))];
+const refs=p=>[...new Set([...p.products,...(p.publication?.products||[])].flatMap(r=>[r.photos.cover,...r.photos.common,...Object.values(r.photos.variants).flat()]).filter(Boolean))];
 export class ArchiveService{
  constructor(store,photos){this.store=store;this.photos=photos;this.jobs=new Map();this.plans=new Map();fs.mkdirSync(path.join(store.dir,'backups'),{recursive:true});}
  legacyFile(file){const restored=path.join(this.store.dir,'legacy-media',file);return fs.existsSync(restored)?restored:path.join(codeRoot,file);}
@@ -72,7 +72,7 @@ export class ArchiveService{
     }
     for(const entry of plan.manifest.files.filter(e=>e.name.startsWith('legacy/'))){const isOriginal=entry.name.startsWith('legacy/originals/'),relative=entry.name.slice(isOriginal?'legacy/originals/'.length:'legacy/display/'.length),target=path.join(this.store.dir,isOriginal?'legacy-originals':'legacy-media',relative);if(fs.existsSync(target)){if(sha(fs.readFileSync(target))===entry.sha256)continue;const old=path.join(quarantine,randomUUID());fs.renameSync(target,old);moves.push({target,old});}else moves.push({target});fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(path.join(plan.stage,entry.name),target,fs.constants.COPYFILE_EXCL);}
     for(const entry of plan.manifest.files.filter(e=>e.name.startsWith('snapshots/'))){const source=path.join(plan.stage,entry.name);let target=path.join(this.store.snapshots,entry.name.split('/')[1]);if(fs.existsSync(target)){if(sha(fs.readFileSync(target))===entry.sha256)continue;target=path.join(this.store.snapshots,entry.name.split('/')[1].slice(0,11)+randomUUID()+'.json');}moves.push({target});fs.copyFileSync(source,target,fs.constants.COPYFILE_EXCL);}
-    validatePayload(plan.payload);const result=this.store.commit(plan.payload,'确认从完整ZIP恢复（旧资料与被替换文件均保留）');this.plans.delete(token);try{fs.rmSync(plan.stage,{recursive:true,force:true});}catch{/* Cleanup failure must not roll back photos after CURRENT has committed. */}return result;
+    validatePayload(plan.payload);const result=this.store.commit(this.store.preservePublished(plan.payload),'确认从完整ZIP恢复（旧资料与被替换文件均保留）');this.plans.delete(token);try{fs.rmSync(plan.stage,{recursive:true,force:true});}catch{/* Cleanup failure must not roll back photos after CURRENT has committed. */}return result;
    }catch(error){for(const {target,old}of moves.reverse()){if(fs.existsSync(target))fs.renameSync(target,path.join(quarantine,'failed-'+randomUUID()));if(old)fs.renameSync(old,target);}throw new StoreError(409,'恢复未完成，当前商品库及照片已保持/回退原状，保全资料在私有恢复目录：'+error.message);}
   });
  }
