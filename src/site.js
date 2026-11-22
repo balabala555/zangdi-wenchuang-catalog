@@ -5,7 +5,7 @@ export const siteConfig={
  subtitle:'两家藏地文创小店，一份熟悉的喜欢。',
  relationship:'两家实体店 · 同一经营团队 · 商品与售价统一',
  visual:{pageWatermarkOpacity:0.028},
- exportWatermark:{opacity:0.055,angle:-25,rowGap:210,columnGap:310,color:'#244d3e'},
+ exportWatermark:{enabled:false,opacity:0,angle:-25,rowGap:210,columnGap:310,color:'#244d3e'},
  customerMode:'equal',
  contactHint:'两位线上客服均服务两家门店。任选一位联系，添加不成功可联系另一位。',
  stores:[

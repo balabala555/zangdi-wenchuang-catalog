@@ -1,0 +1,50 @@
+[
+  {
+    "name": "light-gray",
+    "mode": "before",
+    "opacity": 0.6,
+    "bytes": 303246,
+    "width": 800,
+    "height": 1067
+  },
+  {
+    "name": "light-gray",
+    "mode": "after",
+    "opacity": 0.1,
+    "bytes": 302296,
+    "width": 800,
+    "height": 1067
+  },
+  {
+    "name": "light-mint",
+    "mode": "before",
+    "opacity": 0.6,
+    "bytes": 279082,
+    "width": 800,
+    "height": 1067
+  },
+  {
+    "name": "light-mint",
+    "mode": "after",
+    "opacity": 0.1,
+    "bytes": 277554,
+    "width": 800,
+    "height": 1067
+  },
+  {
+    "name": "bright-blue",
+    "mode": "before",
+    "opacity": 0.6,
+    "bytes": 297796,
+    "width": 800,
+    "height": 1067
+  },
+  {
+    "name": "bright-blue",
+    "mode": "after",
+    "opacity": 0.1,
+    "bytes": 297552,
+    "width": 800,
+    "height": 1067
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "rotations": 0,
+  "translucentText": 0,
+  "translucentImages": 0,
+  "total": 290,
+  "quiet": {
+    "whiteBorderPixels": 13288,
+    "minimumTestedClearWidth": 11
+  }
+}

@@ -1,6 +1,6 @@
 // Browser acceptance in an isolated temporary merchant library. Never touches actual operator data.
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import sharp from 'sharp';import {createAdminServer} from '../admin/server.mjs';
-const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'admin141-ui-')),dataDir=path.join(dir,'data'),out=process.env.ADMIN_SCREENSHOTS||'docs/screenshots/v1.4.1';fs.mkdirSync(out,{recursive:true});let app,browser;
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'admin141-ui-')),dataDir=path.join(dir,'data'),out=process.env.ADMIN_SCREENSHOTS||'docs/screenshots/v1.4.1-soft-watermark';fs.mkdirSync(out,{recursive:true});let app,browser;
 const start=async()=>{app=createAdminServer({dataDir});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));return `http://127.0.0.1:${app.server.address().port}/#${app.launchToken}`;};const stop=async()=>{app.server.closeAllConnections();await new Promise(r=>app.server.close(r));};
 try{
  const files=[];for(const [i,color]of ['#dbd7cc','#88958e','#b3a489'].entries()){const file=path.join(dir,`fixture-${i}.png`);fs.writeFileSync(file,await sharp({create:{width:640,height:800,channels:3,background:color}}).png().toBuffer());files.push(file);}

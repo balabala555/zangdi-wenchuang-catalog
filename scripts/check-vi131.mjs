@@ -32,8 +32,8 @@ try{
    if(['mobile','desktop'].includes(mode))await page.screenshot({path:`${out}/${mode}-cart-dialog.png`});
    await page.locator('#export-image').click();await page.locator('#export-preview').waitFor();const image=page.locator('#export-preview');await image.evaluate(i=>i.decode());
    const texts=await page.evaluate(()=>textCalls);for(const value of ['参考合计：¥290.00','15289007429','18673575510'])assert.ok(texts.some(t=>t.value.includes(value)));
-   for(const id of ['15289007429','18673575510'])assert.ok(texts.some(t=>t.alpha<1&&t.value.includes(id)),'Permanent distributed WeChat watermark');
-   const draws=await page.evaluate(()=>drawCalls);assert.ok(draws.some(d=>d.alpha<1),'Watermark artwork drawn permanently');
+   assert.ok(!texts.some(t=>t.alpha<1),'List text must be fully opaque; no repeated/diagonal contact marks');
+   const draws=await page.evaluate(()=>drawCalls);assert.ok(!draws.some(d=>d.alpha<1),'No semitransparent artwork overlays on the list');
    const photoDraws=draws.filter(d=>d.alpha===1&&d.args.length===4&&d.args[0]>=exportLayout.photoX&&d.args[0]<exportLayout.textX&&d.args[1]>=exportLayout.photoY&&d.args[1]<exportLayout.photoY+3*exportLayout.rowHeight&&d.args[2]<=exportLayout.photoWidth&&d.args[3]<=exportLayout.photoHeight);assert.equal(photoDraws.length,3);
    const url=await image.getAttribute('src');if(['mobile','desktop','offline'].includes(mode))await writeFile(`${out}/${mode}-290.png`,Buffer.from(url.split(',')[1],'base64'));
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);

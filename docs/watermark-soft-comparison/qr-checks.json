@@ -1,0 +1,10 @@
+{
+  "originals": 2,
+  "beforeDecoded": 2,
+  "afterDecoded": 2,
+  "expectedPayloadsUnchanged": true,
+  "quietZoneChecks": {
+    "whiteBorderPixels": 13288,
+    "minimumTestedClearWidth": 11
+  }
+}

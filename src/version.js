@@ -1,1 +1,1 @@
-export const releaseInfo = {version:'1.4.1',viVersion:'1.1',adminPatch:'商品管理完善版',revision:'20261122-admin-1.4.1',baselineCommit:'643a768498d42a2b394475a4682d46bcd06fef97',baselineTag:'restore/vi-v1.1-643a768'};
+export const releaseInfo = {version:'1.4.1',viVersion:'1.1',adminPatch:'轻水印优化版',revision:'20261122-admin-1.4.1-soft-watermark',baselineCommit:'643a768498d42a2b394475a4682d46bcd06fef97',baselineTag:'restore/vi-v1.1-643a768'};
