@@ -1,3 +1,5 @@
+> 最新更新：原03更新通道已对齐。C:\zangdi-catalog直接双击03即可，不必按下文重新下载ZIP；详见[03更新通道修复](update-channel-fix.md)。
+
 # V1.4.1：修复原3000顾客网页不读取后台商品
 
 本次继续使用`test/admin-v1.4.1-soft-watermark`，标记“3000商品读取修复版”。不合并main，不部署。

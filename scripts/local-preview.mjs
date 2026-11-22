@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 import {backupProject,recoverCopy,unique} from './preview-backup.mjs';
 import {managedPreview,stopManagedPreview,availablePort,writeRuntime,clearRuntime} from './preview-control.mjs';
 export const REPO='https://github.com/balabala555/zangdi-wenchuang-catalog.git',BRANCH='test/vi-v1.3.0';
+export const ADMIN_BRANCH='test/admin-v1.4.1-soft-watermark',UPDATE_BRANCHES=[BRANCH,ADMIN_BRANCH];
 const git=(root,args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
 const project=root=>{let p;try{p=JSON.parse(readFileSync(path.join(root,'package.json'),'utf8'));}catch{throw Error('没有找到有效网站项目。请重新选择能看到02-start.cmd和package.json的原网站文件夹。');}if(p.name!=='zangdi-wenchuang-catalog')throw Error('所选文件夹不是网站项目，请选择含package.json和02-start.cmd的文件夹。');return p;};
 export function inspect(root,{repo=REPO}={}){
@@ -27,13 +28,14 @@ function candidate(root,next,validate){
  try{git(temp,['clone','--shared','--no-checkout',root,path.join(temp,'repo')]);git(path.join(temp,'repo'),['checkout','--detach',next]);validate(path.join(temp,'repo'));}finally{rmSync(temp,{recursive:true,force:true});}
 }
 export function safeUpdate(root,options={}){
- const before=inspect(root,options);clean(root);if(before.branch!==BRANCH)throw Error('当前不在测试分支；请使用05返回测试版本，不会自动覆盖恢复分支。');
- git(root,['fetch','origin',`refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}`]);
- const next=git(root,['rev-parse',`refs/remotes/origin/${BRANCH}`]);
+ const before=inspect(root,options);clean(root);if(!UPDATE_BRANCHES.includes(before.branch))throw Error('当前不是受支持的测试分支；不会更新main或覆盖恢复分支。');
+ const channel=before.branch;
+ git(root,['fetch','origin',`refs/heads/${channel}:refs/remotes/origin/${channel}`]);
+ const next=git(root,['rev-parse',`refs/remotes/origin/${channel}`]);
  try{git(root,['merge-base','--is-ancestor',before.commit,next]);}catch{throw Error('本地与远程存在分叉，已停止，不会强制覆盖。');}
  if(next===before.commit)return {...before,updated:false};
  const snapshot=backupProject(root,before),backup='backup/preview-'+unique();git(root,['branch',backup,before.commit]);
- const file=path.resolve(root,git(root,['rev-parse','--git-path','zangdi-preview-recovery.json']));writeFileSync(file,JSON.stringify({previous:before.commit,updated:next,backup,snapshot},null,2));
+ const file=path.resolve(root,git(root,['rev-parse','--git-path','zangdi-preview-recovery.json']));writeFileSync(file,JSON.stringify({previous:before.commit,updated:next,branch:channel,backup,snapshot},null,2));
  options.onProgress?.('更新前完整备份：'+snapshot);
  try{
   candidate(root,next,options.validateCandidate||verifyCandidate);clean(root);
@@ -110,7 +112,7 @@ export async function cli(action){
  if(action==='update'){
   await stopManagedPreview(root);
   const result=existsSync(path.join(root,'.git'))?safeUpdate(root,{onProgress:console.log}):safeMigrate(root,migrationTarget(),{onProgress:console.log});
-  console.log((result.migrated?'ZIP迁移成功':result.updated?'更新成功':'已经是最新版')+'！\n当前版本 v'+result.version+'\n提交 '+result.commit+'\n固定目录 '+result.root+'\n现在自动启动网站；日常仍双击03-update.cmd，无需再初始化。');if(result.migrated)openLocal(result.root);await startPreview(result.root);return;
+  console.log((result.migrated?'ZIP迁移成功':result.updated?'更新成功':'已经是最新版')+'！\n当前版本 v'+result.version+'\n测试分支 '+result.branch+'\n提交 '+result.commit+'\n固定目录 '+result.root+'\n现在自动启动网站；日常仍双击03-update.cmd，无需再初始化。');if(result.migrated)openLocal(result.root);if(result.updated||result.migrated){await new Promise((resolve,reject)=>{const child=spawn(process.execPath,[path.join(result.root,'scripts/local-preview.mjs'),'start'],{cwd:result.root,stdio:'inherit',env:process.env});child.on('error',reject);child.on('exit',code=>code===0||code===130?resolve():reject(Error('程序已更新，但预览未正常启动；请双击02查看提示，商品资料未改写。')));});}else await startPreview(result.root);return;
  }
  if(action==='recover'){await stopManagedPreview(root);const result=safeRecover(root);console.log('已恢复到独立目录：'+result.root+'\n当前版本 v'+result.version+'；当前原目录完整保留。');openLocal(result.root);await startPreview(result.root);return;}
  if(action==='resume'){await stopManagedPreview(root);inspect(root);clean(root);git(root,['switch',BRANCH]);console.log('已返回测试分支。下一步双击03更新并启动。');return;}
