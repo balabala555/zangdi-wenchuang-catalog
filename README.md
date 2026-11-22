@@ -1,3 +1,5 @@
+V1.6.1：商品展示图片统一不添加水印；从私有原图生成压缩展示，不改商品记录。操作与报告见 [V1.6.1](docs/v1.6.1-plain-photos.md)。未执行公网部署。
+
 V1.6.0 本地验收版：后台受保护线上发布已实现，尚未执行公网部署。使用说明及安全边界见 [V1.6](docs/v1.6-protected-publishing.md)。
 
 # zangdi-wenchuang-catalog

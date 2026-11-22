@@ -15,18 +15,19 @@ export async function buildPreview(){
   const read=file=>readFile(path.join(root,file),'utf8');
   const [html,css,...modules]=await Promise.all(['index.html','src/style.css','src/version.js','src/site.js','src/homepage.js','src/data.js','src/cart.js','src/brand.js','src/generated-images.js','src/generated-homepage-images.js','src/images.js','src/export.js','src/app.js'].map(read));
   const paths=new Set([...Object.keys(homeSources),...products.flatMap(p=>[p.image,p.coverImage,...(p.images || []),...Object.values(p.variantImages || {}).flat()])].map(photoPath).filter(Boolean));
-  const embeddedPhotos={};let embeddedBytes=0;
+  const embeddedPhotos={},missingProductPhotos=[];let embeddedBytes=0;
   const maxEmbeddedBytes=16*1024*1024;
   for(const photo of paths){
     const entry=optimizedPhotos[photo] || homepagePhotos[photo];
     if(!entry || !(entry.watermarkVersion==='merchant-approved-assets-v1.1' || entry.version==='homepage-vi1.1-private-masks-v1'))throw new Error('Missing verified watermarked rendition: '+photo);
     const rendition=entry.detail.path;
-    const bytes=(await stat(path.join(root,rendition))).size;
-    if(embeddedBytes+bytes>maxEmbeddedBytes)continue;
+    let photoBytes;if(optimizedPhotos[photo]){try{const {productPhoto}=await import('./admin/product-images.mjs');photoBytes=await productPhoto(path.join(root,'.private-originals'),photo,'detail');}catch{embeddedPhotos[photo]=null;missingProductPhotos.push(photo);continue;}}else photoBytes=await readFile(path.join(root,rendition));
+    const bytes=photoBytes.length;
+    if(embeddedBytes+bytes>maxEmbeddedBytes){if(optimizedPhotos[photo]){embeddedPhotos[photo]=null;missingProductPhotos.push(photo);}continue;}
     embeddedBytes+=bytes;
-    const extension=path.extname(rendition).slice(1).toLowerCase();
+    const extension=optimizedPhotos[photo]?'webp':path.extname(rendition).slice(1).toLowerCase();
     const mime=extension==='jpg' || extension==='jpeg'?'image/jpeg':'image/'+extension;
-    embeddedPhotos[photo]='data:'+mime+';base64,'+(await readFile(path.join(root,rendition))).toString('base64');
+    embeddedPhotos[photo]='data:'+mime+';base64,'+photoBytes.toString('base64');
   }
   const qrs={};
   for(const service of brandConfig.customerServices){
@@ -37,7 +38,7 @@ export async function buildPreview(){
   const brandAssets={};
   if(brandConfig.assets?.enabled)for(const file of Object.values(brandConfig.assets.files)){const bytes=await readFile(path.join(root,file.path));if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw new Error('Brand asset checksum mismatch: '+file.path);brandAssets[file.path]='data:image/png;base64,'+bytes.toString('base64');}
   const js='const embeddedBrandAssets='+JSON.stringify(brandAssets)+';\n'+'const embeddedBrandQrs='+JSON.stringify(qrs)+';\nconst embeddedPhotos='+JSON.stringify(embeddedPhotos)+';\n'+modules.map(source=>source.replace(/^import .* from '\.\/[^']+';\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
-  let brandedHtml=html;for(const [file,url] of Object.entries(brandAssets))brandedHtml=brandedHtml.replaceAll('src="./'+file+'"','src="'+url+'"');
+  let brandedHtml=missingProductPhotos.length?html.replace('<main>','<main><p class="small-note">此静态预览有部分商品图片未嵌入（原图不可用或容量限制），相关照片未展示。请用07后台核对原图；不会用旧水印照片替代。</p>'):html;for(const [file,url] of Object.entries(brandAssets))brandedHtml=brandedHtml.replaceAll('src="./'+file+'"','src="'+url+'"');
   const output=brandedHtml.replace(/<a id="download-page"[^>]*>[^<]*<\/a>/,'').replace('<link rel="stylesheet" href="./src/style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="./src/app.js"></script>',()=>`<script>\n(()=>{\n${js.replace(/<\/script/gi,'<\\/script')}\n})();\n</script>`);
   await mkdir(path.join(root,'dist'),{recursive:true});
   await writeFile(path.join(root,'dist/index.html'),output);

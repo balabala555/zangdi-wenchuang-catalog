@@ -1,3 +1,4 @@
+import {photoTemplate} from '../admin/assets.mjs';
 // Read-only release gate. Never changes files, Git refs, originals or generated images.
 import {readFile,readdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
@@ -17,6 +18,7 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const read=file=>readFile(path.join(root,file));
 export async function verifyRelease({config=brandConfig,manifest=optimizedPhotos,release=releaseInfo}={}){
+ assert.equal(photoTemplate.version,'unwatermarked-product-v1','Product photos must not embed brand overlays');assert.equal(photoTemplate.position,'none');
  validateBrand(config);
  validateSite(siteConfig,config);
  const baseline=JSON.parse(await read('config/accepted-baseline.json'));

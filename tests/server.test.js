@@ -33,14 +33,14 @@ for(const basePath of ['/', '/catalog'])test(`preview resources work under ${bas
     const embedded=JSON.parse(exported.match(/const embeddedPhotos=(.*);\n/)[1]);
     for(const name of ['light-gray.jpg','light-mint.jpg','bright-blue.jpg']){
       const photo='public/images/felt-mushroom-bag/'+name;
-      assert.ok(embedded[photo].startsWith('data:image/jpeg;base64,'));
-      assert.deepEqual(Buffer.from(embedded[photo].split(',')[1],'base64'),await readFile(new URL('../'+photo,import.meta.url)));
+      assert.ok(embedded[photo].startsWith('data:image/webp;base64,'));
+      const {productPhoto}=await import('../admin/product-images.mjs');assert.deepEqual(Buffer.from(embedded[photo].split(',')[1],'base64'),await productPhoto(new URL('../.private-originals',import.meta.url).pathname,photo,'detail'));
     }
 
     assert.doesNotMatch(exported,/<script[^>]+src=|<link[^>]+stylesheet|^import |id="download-page"/m);
     const rendition=Object.values(optimizedPhotos)[0].thumb.path;
     const optimized=await fetch(new URL(rendition,base));assert.equal(optimized.status,200);
-    assert.equal(optimized.headers.get('cache-control'),'public, max-age=31536000, immutable');
+    assert.equal(optimized.headers.get('cache-control'),'public, max-age=0, must-revalidate');
     const cached=await fetch(new URL(rendition,base),{headers:{'If-None-Match':optimized.headers.get('etag')}});
     assert.equal(cached.status,304);assert.equal(await cached.text(),'');
     const original=await fetch(new URL(Object.keys(optimizedPhotos)[0],base));

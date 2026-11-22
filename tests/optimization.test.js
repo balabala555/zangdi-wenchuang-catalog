@@ -9,7 +9,7 @@ import {brandConfig} from '../src/brand.js';
 import {optimizedPhotos} from '../src/generated-images.js';
 import {photoUrl,photoSrcset} from '../src/images.js';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-test('watermarked renditions match manifests, are bounded and match correct public variants',async()=>{
+test('historical stored renditions remain compatible and match manifests, are bounded and match correct public variants',async()=>{
  let originalTotal=0,thumbTotal=0,cardTotal=0;
  for(const [source,entry] of Object.entries(optimizedPhotos)){
   const recipe=JSON.parse(entry.recipe);
@@ -33,13 +33,13 @@ test('watermarked renditions match manifests, are bounded and match correct publ
   const metadata=await sharp(original).metadata();
   if(Math.max(metadata.width,metadata.height)<=1600)assert.deepEqual(await sharp(detail).rotate().toColourspace('srgb').raw().toBuffer(),raw);
   thumbTotal+=entry.thumb.bytes;cardTotal+=entry.card.bytes;
-  assert.equal(photoUrl(source,'thumb'),'./'+entry.thumb.path);assert.match(photoSrcset(source),/w,/);
+  assert.equal(photoUrl(source,'thumb'),'./'+entry.thumb.path+'?policy=unwatermarked-product-v1');assert.match(photoSrcset(source),/w,/);
  }
  assert.ok(thumbTotal<originalTotal*0.1);assert.ok(cardTotal<originalTotal*0.5);
 });
 test('unchanged compression runs reuse checksummed renditions and produce identical manifests',()=>{
  const manifest=readFileSync(new URL('../src/generated-images.js',import.meta.url),'utf8');
  const before=execFileSync(process.execPath,['scripts/optimize-images.mjs'],{encoding:'utf8'});
- assert.ok(before.includes(`${Object.keys(optimizedPhotos).length} unchanged entries reused`));
+ assert.ok(before.includes('水印已禁用'));
  assert.equal(readFileSync(new URL('../src/generated-images.js',import.meta.url),'utf8'),manifest);
 });

@@ -51,7 +51,7 @@ test('watermarks are baked into all sizes; private originals remain untouched',a
 test('processing twice does not add another watermark layer, even without private originals',()=>{
  const manifest=readFileSync('src/generated-images.js','utf8');
  const result=execFileSync(process.execPath,['scripts/optimize-images.mjs'],{env:{...process.env,CATALOG_ORIGINALS_DIR:'/tmp/nonexistent-catalog-private-originals'},encoding:'utf8'});
- assert.ok(result.includes(Object.keys(optimizedPhotos).length+' unchanged entries reused'));
+ assert.ok(result.includes('水印已禁用'));
  assert.equal(readFileSync('src/generated-images.js','utf8'),manifest);
 });
 test('private upload directory is ignored by Git and never appears in tracked paths',()=>{

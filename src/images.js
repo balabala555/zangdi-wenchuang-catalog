@@ -26,10 +26,10 @@ export function cartPhoto(product, variant) {
 // Standalone previews embed one detail rendition per original; normal pages use size-specific files.
 export function photoUrl(path, size='detail') {
   if (!photoPath(path)) throw new Error('Invalid photo path');
-  if(typeof embeddedPhotos !== 'undefined' && embeddedPhotos[path])return embeddedPhotos[path];
-  if(/^public\/images\/local-preview\/[a-f0-9]{64}\.webp$/.test(path))return './'+path+'?size='+(size==='thumb'?'thumb':'detail');
+  if(typeof embeddedPhotos !== 'undefined' && Object.hasOwn(embeddedPhotos,path))return embeddedPhotos[path]||'./missing-private-original.webp';
+  if(/^public\/images\/local-preview\/(?:legacy-)?[a-f0-9]{64}\.webp$/.test(path))return './'+path+'?size='+(size==='thumb'?'thumb':'detail');
   const entry=optimizedPhotos[path] || homepagePhotos[path];
-  return './'+(entry?.[size]?.path || entry?.public?.path || path);
+  return './'+(entry?.[size]?.path || entry?.public?.path || path)+(optimizedPhotos[path]?'?policy=unwatermarked-product-v1':'');
 }
 export function photoSrcset(path, size='detail') {
   if(typeof embeddedPhotos !== 'undefined')return '';

@@ -18,7 +18,7 @@ function windowsFlush({fail=false}={}){
  return {seen,handles,closed,restore(){fs.openSync=original.open;fs.fsyncSync=original.sync;fs.closeSync=original.close;}};
 }
 test('Windows writable flush rule: photo upload succeeds without truncating original bytes; product catalogue unchanged',async()=>{
- const dir=fixture();let guard;try{const store=new CatalogStore(dir),before=store.fingerprint(),photos=new PhotoLibrary(dir),bytes=await image(),file=path.join(dir,'raw.png');fs.writeFileSync(file,bytes);guard=windowsFlush();const uploaded=await photos.upload(file,'实拍.png'),m=assetMeta(dir,uploaded.ref,true);assert.equal(guard.seen.length,5);assert.ok(guard.seen.every(f=>f==='r+'));assert.equal(guard.handles.size,0);assert.equal(sha(fs.readFileSync(path.join(assetPath(dir,uploaded.ref),m.original))),sha(bytes));assert.equal(store.fingerprint(),before);assert.equal(m.renditions.detail.mark.layers,1);
+ const dir=fixture();let guard;try{const store=new CatalogStore(dir),before=store.fingerprint(),photos=new PhotoLibrary(dir),bytes=await image(),file=path.join(dir,'raw.png');fs.writeFileSync(file,bytes);guard=windowsFlush();const uploaded=await photos.upload(file,'实拍.png'),m=assetMeta(dir,uploaded.ref,true);assert.equal(guard.seen.length,5);assert.ok(guard.seen.every(f=>f==='r+'));assert.equal(guard.handles.size,0);assert.equal(sha(fs.readFileSync(path.join(assetPath(dir,uploaded.ref),m.original))),sha(bytes));assert.equal(store.fingerprint(),before);assert.equal(m.renditions.detail.mark.layers,0);
  }finally{guard?.restore();fs.rmSync(dir,{recursive:true,force:true});}
 });
 test('HTTP upload flush failure logs its stage/code and closes handle; ten original products and prior photos survive retry/restart',async()=>{
