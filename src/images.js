@@ -15,16 +15,19 @@ export function productGallery(product, variant) {
   const common=publicPhotos(product);
   const own=product.variants?.includes(variant) && Object.hasOwn(product.variantImages || {}, variant)
     ? photoList(product.variantImages[variant]) : [];
+  if(product.strictVariantPhotos&&product.variants.length>1)return {photos:own,generic:false};
   return {photos:[...new Set([...own,...common])], generic:!!variant && !own.length && !!common.length};
 }
 export function cartPhoto(product, variant) {
  const own=product.variants?.includes(variant)?photoList(product.variantImages?.[variant]):[];
+ if(product.strictVariantPhotos&&product.variants.length>1)return own[0]||null;
  return own[0] || photoPath(product.coverImage) || publicPhotos(product)[0] || null;
 }
 // Standalone previews embed one detail rendition per original; normal pages use size-specific files.
 export function photoUrl(path, size='detail') {
   if (!photoPath(path)) throw new Error('Invalid photo path');
   if(typeof embeddedPhotos !== 'undefined' && embeddedPhotos[path])return embeddedPhotos[path];
+  if(/^public\/images\/local-preview\/[a-f0-9]{64}\.webp$/.test(path))return './'+path+'?size='+(size==='thumb'?'thumb':'detail');
   const entry=optimizedPhotos[path] || homepagePhotos[path];
   return './'+(entry?.[size]?.path || entry?.public?.path || path);
 }

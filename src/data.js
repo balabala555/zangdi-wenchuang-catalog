@@ -38,3 +38,6 @@ for(const [id,name,price,photo] of [['soft-lamb','软萌小羊',20,'soft'],['rai
  description:'实拍展示图中包含多件商品。具体颜色、款式、材质、尺寸及库存请与客服确认，图片不代表可指定其中每一种图案。',
  variants:['款式待客服确认'],variantImages:{}
 });
+
+// Replaced only in the loopback 08 preview; static customer data is unchanged.
+export const catalogPreview=null;
