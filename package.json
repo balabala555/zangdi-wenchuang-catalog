@@ -1,6 +1,6 @@
 {
   "name": "zangdi-wenchuang-catalog",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -23,7 +23,8 @@
   "devDependencies": {
     "@img/sharp-wasm32": "0.35.5",
     "fontkit": "3.0.0",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "wrangler": "4.166.0"
   },
   "dependencies": {
     "yauzl": "^3.4.0",

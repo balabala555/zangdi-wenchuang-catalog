@@ -9,7 +9,7 @@ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'admin-browser-')),app=createAdmi
 const out=process.env.ADMIN_SCREENSHOTS||'docs/screenshots/v1.4.0-phase2';fs.mkdirSync(out,{recursive:true});
 try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});const origin=`http://127.0.0.1:${app.server.address().port}`,page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin+'/#'+app.launchToken);await page.waitForFunction(()=>document.querySelectorAll('#rows tr').length===9);assert.equal(await page.getByText('发布到网站（暂未开放）').isDisabled(),true);
+ await page.goto(origin+'/#'+app.launchToken);await page.waitForFunction(()=>document.querySelectorAll('#rows tr').length===9);assert.equal(await page.getByText('正式免登录开放（暂未启用）').isDisabled(),true);
  await page.locator('.thumb').evaluateAll(imgs=>Promise.all(imgs.filter(i=>i.tagName==='IMG').map(i=>{i.loading='eager';return i.decode();})));await page.screenshot({path:`${out}/desktop-catalog.png`,fullPage:true});
  const bag=page.locator('tr[data-product="felt-mushroom-bag"]');await bag.getByText('编辑',{exact:true}).click();assert.equal(await page.locator('[name=price]').inputValue(),'90.00');assert.equal(await page.locator('#variants .variant-name').count(),3);await page.screenshot({path:`${out}/desktop-edit-existing.png`});await page.locator('#editor [data-close]').first().click();
  await page.locator('#backups').click();await page.locator('.backup-row').waitFor();await page.screenshot({path:`${out}/desktop-backups.png`});await page.locator('#backup-dialog [data-close]').click();

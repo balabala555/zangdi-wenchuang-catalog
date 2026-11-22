@@ -84,8 +84,8 @@ document.addEventListener('error',e=>{
   img.hidden=true;const frame=img.closest('.home-category,.home-feature,.hero-art,#store-photo')||img.parentElement;frame.classList.add('image-failed');
   if(img.classList.contains('home-photo') && !img.dataset.retriedOnline){img.dataset.retryPhoto=img.src;img.dataset.retriedOnline='1';if(failedHomeImages.size<12)failedHomeImages.add(img);}
 },true);
-const cartStorageKey=catalogPreview?'shan-cart-local-preview':'shan-cart';
-if(catalogPreview){const notice=document.createElement('p');notice.className='small-note';notice.id='local-customer-preview';notice.textContent=`本机真实商品测试预览 · ${catalogPreview.count}件商品 · ${catalogPreview.published?'本机已发布版本':'兼容草稿预览（请在07启用发布管理）'}${catalogPreview.revision}。未公开上线。`;document.querySelector('main').prepend(notice);document.querySelector('#download-page')?.setAttribute('hidden','');}
+const cartStorageKey=catalogPreview?.remote?'zangdi-cart-online':catalogPreview?'shan-cart-local-preview':'shan-cart';
+if(catalogPreview){const notice=document.createElement('p');notice.className='small-note';notice.id='local-customer-preview';notice.textContent=catalogPreview.remote?`授权线上测试 · 已发布${catalogPreview.count}件商品 · 请与客服确认库存`:`本机真实商品测试预览 · ${catalogPreview.count}件商品 · ${catalogPreview.published?'本机已发布版本':'兼容草稿预览（请在07启用发布管理）'}${catalogPreview.revision}。未公开上线。`;document.querySelector('main').prepend(notice);document.querySelector('#download-page')?.setAttribute('hidden','');}
 let cart=[],cartAdjusted=false;
 try {const stored=JSON.parse(localStorage.getItem(cartStorageKey)||'[]');cart=sanitizeCart(stored);if(catalogPreview?.published&&JSON.stringify(stored)!==JSON.stringify(cart)){localStorage.setItem(cartStorageKey,JSON.stringify(cart));cartAdjusted=true;}} catch {}
 let category=categories[0], query='', selected=null, variant='', quantity=1, photoIndex=0, visibleLimit=24, toastTimer;
@@ -146,7 +146,7 @@ $('#detail').addEventListener('click',e=>{
 });
 let adding=false;
 function syncStockControls(){if(!selected)return;const limit=variantLimit(selected,variant),stock=selected.variantStocks?.[variant];quantity=Math.min(quantity,Math.max(1,limit));const caption=$('#variant-stock');if(caption)caption.textContent=limit===0?'已售罄，不能加入选购清单':stock===null||stock===undefined?'库存请与客服确认':`库存 ${stock} · 加入清单不扣库存`;const count=$('#detail .quantity span');if(count)count.textContent=quantity;for(const id of ['#add-cart','#add-more'])if($(id))$(id).disabled=adding||limit===0;const buttons=$('#detail .quantity')?.querySelectorAll('button');if(buttons){buttons[0].disabled=quantity===1||limit===0;buttons[1].disabled=quantity>=limit;}}
-async function availability(product,name){const response=await fetch('./api/customer-availability?id='+encodeURIComponent(product.id)+'&variant='+encodeURIComponent(name),{cache:'no-store'});if(!response.ok)throw Error('商品库存暂不能确认，请刷新后再试');return response.json();}
+async function availability(product,name){if(catalogPreview?.remote){const response=await fetch(new URL('./catalog.json',location.href),{cache:'no-store'});if(!response.ok)throw Error('商品库存暂不能确认，请刷新后再试');const snapshot=await response.json(),p=snapshot.products.find(p=>p.id===product.id),stock=p?.variantStocks?.[name]??null;return {revision:snapshot.catalogPreview.revision,publicationId:snapshot.catalogPreview.publicationId,stock,available:!!p&&p.variants.includes(name)&&p.variantStatuses[name]==='on_sale'&&(stock===null||stock>0)};}const response=await fetch('./api/customer-availability?id='+encodeURIComponent(product.id)+'&variant='+encodeURIComponent(name),{cache:'no-store'});if(!response.ok)throw Error('商品库存暂不能确认，请刷新后再试');return response.json();}
 async function addSelected(keep){if(adding)return;const product=selected,name=variant,amount=quantity;let limit=variantLimit(product,name);if(limit<1){toast('该款已售罄');return;}adding=true;syncStockControls();try{if(catalogPreview){const latest=await availability(product,name);if(!latest.available){toast('该款已售罄或已撤回，请刷新商品');return;}if((latest.revision!==catalogPreview.revision||latest.publicationId!==catalogPreview.publicationId))throw Error('商品价格或库存已更新，请刷新后重新选款');if(latest.stock!==null)limit=Math.min(limit,latest.stock);}if(selected!==product||variant!==name||quantity!==amount)return;const old=cart.find(i=>i.id===product.id&&i.variant===name);if((old?.quantity||0)>=limit)throw Error('清单数量已达到该款可选库存');const n=Math.min(limit,(old?.quantity||0)+amount);if(old)old.quantity=n;else cart.push({id:product.id,variant:name,quantity:n});save();if(keep){quantity=1;renderDetail();toast('已加入此款，可继续选择');}else{$('#detail').close();toast('已加入选购清单');}}catch(error){toast(error.message);}finally{adding=false;if($('#detail').open)syncStockControls();}}
 function cartThumbnail(p,variant){
  const path=cartPhoto(p,variant);
@@ -200,6 +200,7 @@ async function exportImage(){
   const hasDemo=exportCart.some(item=>products.find(p=>p.id===item.id)?.demo!==false);
   const button=$('#export-image');button.disabled=true;button.textContent='正在生成…';
   try{
+    if(catalogPreview?.remote)for(const item of exportCart){const p=products.find(p=>p.id===item.id),latest=await availability(p,item.variant);if(!latest.available||latest.revision!==catalogPreview.revision||latest.publicationId!==catalogPreview.publicationId||latest.stock!==null&&item.quantity>latest.stock)throw Error('商品价格或库存已更新，请刷新并核对清单后再生成图片');}
     const snapshot=JSON.stringify(exportCart);
     if(exportCart.length>95)throw new Error('清单较长，请分批生成图片');
     const photos=[];

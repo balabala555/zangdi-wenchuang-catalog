@@ -1,1 +1,1 @@
-export const releaseInfo = {version:'1.5.0',viVersion:'1.1',adminPatch:'本地发布与库存测试版',revision:'20261122-admin-1.5.0-publication',baselineCommit:'643a768498d42a2b394475a4682d46bcd06fef97',baselineTag:'restore/vi-v1.1-643a768'};
+export const releaseInfo = {version:'1.6.0',viVersion:'1.1',adminPatch:'受保护线上发布 · 本地验收版',revision:'20261123-admin-1.6.0-protected-publish',baselineCommit:'643a768498d42a2b394475a4682d46bcd06fef97',baselineTag:'restore/vi-v1.1-643a768'};
