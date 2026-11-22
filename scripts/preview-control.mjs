@@ -24,4 +24,4 @@ export async function stopManagedPreview(root){
  for(let i=0;i<30;i++){if(!(await managedPreview(root))&&!(await listening(saved.port))){clearRuntime(root,saved.token);return {stopped:true,port:saved.port};}await new Promise(r=>setTimeout(r,100));}
  throw Error('受管理预览尚未关闭，请稍后双击更新；未修改项目。');
 }
-export function availablePort(start=3000,limit=start+20){return new Promise((resolve,reject)=>{const server=net.createServer();server.once('error',e=>{if(e.code==='EADDRINUSE'&&start<limit)availablePort(start+1,limit).then(resolve,reject);else reject(e);});server.listen(start,'0.0.0.0',()=>server.close(()=>resolve(start)));});}
+export function availablePort(start=3000,limit=start+20,host='0.0.0.0'){return new Promise((resolve,reject)=>{const server=net.createServer();server.once('error',e=>{if(e.code==='EADDRINUSE'&&start<limit)availablePort(start+1,limit,host).then(resolve,reject);else reject(e);});server.listen(start,host,()=>server.close(()=>resolve(start)));});}

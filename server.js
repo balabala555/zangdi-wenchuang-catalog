@@ -1,4 +1,6 @@
 import http from 'node:http';
+import {existsSync} from 'node:fs';
+import {releaseInfo} from './src/version.js';
 import {createHash,timingSafeEqual} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -22,7 +24,7 @@ export function createServer({basePath='/',management=null,localCatalogue=null}=
         if(!management||!loopback||req.headers.origin||actual.length!==expected.length||!timingSafeEqual(actual,expected)){res.writeHead(404);return res.end('Not found');}
         res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json');
         if(pathname.endsWith('/stop')&&req.method==='POST'){res.end(JSON.stringify({stopping:true}),()=>{server.close();server.closeAllConnections();});return;}
-        if(pathname==='/.catalog-control'&&req.method==='GET')return res.end(JSON.stringify({root,version:management.version,pid:process.pid}));
+        if(pathname==='/.catalog-control'&&req.method==='GET')return res.end(JSON.stringify({root,version:management.version,pid:process.pid,source:localCatalogue?'merchant':'static',revision:releaseInfo.revision}));
         res.writeHead(405);return res.end();
       }
 
@@ -65,7 +67,16 @@ export function createServer({basePath='/',management=null,localCatalogue=null}=
   });
   return server;
 }
+// 02 / npm start / direct node startup all use the saved merchant catalogue in this admin test project.
+// Legacy static-only distributions without the admin adapter keep their historical behavior.
+export async function startWebsite(){
+ const port=Number(process.env.PORT||3000),basePath=process.env.BASE_PATH||'/';let localCatalogue=null;
+ if(process.env.CATALOG_PREVIEW_SOURCE!=='static'&&existsSync(path.join(root,'admin/customer-preview.mjs'))){
+  const {localCatalogueReader}=await import('./admin/customer-preview.mjs');localCatalogue=localCatalogueReader();const snapshot=localCatalogue.read();console.log(`顾客网页读取本机商品库：${snapshot.catalogPreview.count}件在售真实商品，资料版本${snapshot.catalogPreview.revision}。只读，不发布；后台保存后刷新页面。`);
+ }
+ const server=createServer({basePath,localCatalogue,management:process.env.CATALOG_PREVIEW_TOKEN?{token:process.env.CATALOG_PREVIEW_TOKEN,version:process.env.CATALOG_PREVIEW_VERSION}:null});
+ await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,localCatalogue?'127.0.0.1':'0.0.0.0',resolve);});console.log(`顾客网页：http://localhost:${server.address().port}${basePath}；${localCatalogue?'已接入本机商品资料（非演示静态数据）':'原静态商品数据'}`);return server;
+}
 if(process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
-  const port=Number(process.env.PORT||3000),basePath=process.env.BASE_PATH||'/';
-  createServer({basePath,management:process.env.CATALOG_PREVIEW_TOKEN?{token:process.env.CATALOG_PREVIEW_TOKEN,version:process.env.CATALOG_PREVIEW_VERSION}:null}).listen(port,'0.0.0.0',()=>console.log(`Catalog running on port ${port}, base path ${basePath}`));
+ startWebsite().catch(error=>{console.error(error.status?error.message:error.code==='EADDRINUSE'?'3000端口或指定预览端口正在使用，请先关闭旧顾客网站窗口；未终止其他程序。':'顾客网页启动失败，请用07核对商品库及原有照片登记；未改动商品资料。');process.exitCode=1;});
 }

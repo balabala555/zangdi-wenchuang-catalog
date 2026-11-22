@@ -75,14 +75,19 @@ export function safeMigrate(source,target,options={}){
 // Kept for legacy callers/tests; update no longer treats an unrelated port as a project lock.
 export function requireStopped(port=3000){return new Promise((resolve,reject)=>{const socket=net.connect({host:'127.0.0.1',port});socket.setTimeout(1500);socket.once('connect',()=>{socket.destroy();reject(Error('预览端口仍在使用。'));});socket.once('error',e=>{socket.destroy();e.code==='ECONNREFUSED'?resolve():reject(e);});socket.once('timeout',()=>{socket.destroy();reject(Error('端口检查超时。'));});});}
 function openLocal(value){if(process.platform==='win32')spawn('explorer.exe',[value],{detached:true,stdio:'ignore'}).on('error',()=>{}).unref();}
+export function expectedPreviewIdentity(root,env=process.env){
+ const p=project(root);let revision;try{revision=readFileSync(path.join(root,'src/version.js'),'utf8').match(/revision\s*:\s*['"]([^'"]+)['"]/)?.[1];}catch{}
+ return {version:p.version,source:env.CATALOG_PREVIEW_SOURCE!=='static'&&existsSync(path.join(root,'admin/customer-preview.mjs'))?'merchant':'static',revision};
+}
+export function reusablePreview(existing,expected){return !!existing&&existing.version===expected.version&&(existing.source||'static')===expected.source&&(!expected.revision||existing.revision===expected.revision);}
 export async function startPreview(root,{open=true}={}){
- const p=project(root),existing=await managedPreview(root);
- if(existing&&existing.version===p.version){console.log('预览已经启动：http://localhost:'+existing.port);if(open)openLocal('http://localhost:'+existing.port);return;}
+ const p=project(root),expected=expectedPreviewIdentity(root),existing=await managedPreview(root);
+ if(reusablePreview(existing,expected)){console.log('预览已经启动：http://localhost:'+existing.port+'；数据来源：'+(expected.source==='merchant'?'本机已保存商品':'静态商品'));if(open)openLocal('http://localhost:'+existing.port);return;}
  if(existing)await stopManagedPreview(root);
- const port=await availablePort(),token=randomUUID();
+ let port;try{port=await availablePort(3000,expected.source==='merchant'?3000:3020,expected.source==='merchant'?'127.0.0.1':'0.0.0.0');}catch(error){if(expected.source==='merchant'&&error.code==='EADDRINUSE')throw Error('3000端口仍由另一个旧网站窗口使用。请关闭旧02黑色窗口，再双击本目录02；未自动改用其他端口，也未终止其他程序。');throw error;}const token=randomUUID();
  console.log('当前版本 v'+p.version+'；本地预览 http://localhost:'+port+'；关闭此预览请按Ctrl+C。');
  if(port!==3000)console.log('3000端口由其他程序使用，已自动选择'+port+'，未停止其他程序。浏览器清单按地址独立保存，原3000端口清单未删除。');
- for(const list of Object.values(os.networkInterfaces()))for(const a of list||[])if(a.family==='IPv4'&&!a.internal&&(/^(10\.|192\.168\.)/.test(a.address)||/^172\.(1[6-9]|2[0-9]|3[01])\./.test(a.address)))console.log('手机同Wi-Fi访问 http://'+a.address+':'+port);
+ if(expected.source==='static')for(const list of Object.values(os.networkInterfaces()))for(const a of list||[])if(a.family==='IPv4'&&!a.internal&&(/^(10\.|192\.168\.)/.test(a.address)||/^172\.(1[6-9]|2[0-9]|3[01])\./.test(a.address)))console.log('手机同Wi-Fi访问 http://'+a.address+':'+port);
  await new Promise((resolve,reject)=>{
   const child=spawn(process.execPath,['server.js'],{cwd:root,stdio:'inherit',env:{...process.env,PORT:String(port),BASE_PATH:'/',CATALOG_PREVIEW_TOKEN:token,CATALOG_PREVIEW_VERSION:p.version}});
   writeRuntime(root,{token,port,pid:child.pid});
